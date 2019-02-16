@@ -4,7 +4,7 @@ import org.processmining.models.connections.GraphLayoutConnection;
 import org.processmining.models.graphbased.directed.petrinet.Petrinet;
 import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactory;
 import org.processmining.models.semantics.petrinet.Marking;
-import org.processmining.plugins.pnml.base.Pnml;
+import org.processmining.plugins.pnml.Pnml;
 import org.processmining.plugins.pnml.importing.PnmlImportUtils;
 
 import java.io.File;
