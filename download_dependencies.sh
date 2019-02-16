@@ -63,7 +63,7 @@ download_and_unpack ProcessTree.jar https://svn.win.tue.nl/trac/prom/export/3772
 
 download_and_unpack EvolutionaryTreeMiner.jar https://svn.win.tue.nl/trac/prom/export/37720/Releases/Packages/EvolutionaryTreeMiner/EvolutionaryTreeMiner-6.7.171-all.zip
 
-download_and_unpack InductiveMiner.jar https://svn.win.tue.nl/trac/prom/export/37720/Releases/Packages/InductiveMiner/InductiveMiner-6.8.411-all.zip
+download_and_unpack InductiveMiner.jar https://svn.win.tue.nl/trac/prom/export/37720/Releases/Packages/InductiveMiner/InductiveMiner-6.8.415-all.zip
 
 download_and_unpack PTConversions.jar https://svn.win.tue.nl/trac/prom/export/37720/Releases/Packages/PTConversions/PTConversions-6.8.32-all.zip
 
