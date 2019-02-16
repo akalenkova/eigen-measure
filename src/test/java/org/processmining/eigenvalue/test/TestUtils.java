@@ -5,6 +5,8 @@ import org.deckfour.xes.classification.XEventClasses;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.in.XUniversalParser;
 import org.deckfour.xes.model.XLog;
+import org.deckfour.xes.model.impl.XAttributeMapImpl;
+import org.deckfour.xes.model.impl.XLogImpl;
 import org.junit.Test;
 import org.processmining.eigenvalue.Utils;
 import org.processmining.models.graphbased.directed.petrinet.StochasticNet;
@@ -89,7 +91,7 @@ public class TestUtils {
     public static XEventClasses getxEventClasses(XEventClassifier classifier, int size) {
         XEventClasses eventClasses = new XEventClasses(classifier);
         for (int i = 0; i < size; i++){
-            eventClasses.register(i+"");
+            eventClasses.register(new XLogImpl(new XAttributeMapImpl()));
         }
         return eventClasses;
     }
