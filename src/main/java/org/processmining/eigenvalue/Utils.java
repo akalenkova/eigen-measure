@@ -17,10 +17,15 @@ import org.processmining.processtree.ProcessTree;
 import org.processmining.processtree.visualization.tree.TreeLayoutBuilder;
 import org.progressmining.xeslite.plugin.OpenLogFileLiteImplPlugin;
 
+import dk.brics.automaton2.Automaton;
+import dk.brics.automaton2.StatePair;
+
 import java.awt.*;
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Utils {
 	
@@ -160,4 +165,24 @@ public class Utils {
 		OpenLogFileLiteImplPlugin openPlugin = new OpenLogFileLiteImplPlugin();
 		return (XLog) openPlugin.importFile(StochasticNetUtils.getDummyUIContext(), file);
 	}
+	
+	/**
+	 * Adding silent transitions to automaton
+	 * 
+	 * @param a
+	 */
+	public static void addTau(Automaton a) {
+    	
+    	Set<StatePair> pairs = new HashSet<StatePair>();
+        int cnt = 0;
+    	for (dk.brics.automaton2.State s : a.getStates()) {
+        	for (dk.brics.automaton2.Transition t : s.getTransitions()) {
+        		pairs.add(new StatePair(s, t.getDest()));
+        	}
+        	
+        }
+    	System.out.println("Adding epsilons");
+        a.addEpsilons(pairs, ProMCanceller.NEVER_CANCEL);
+        System.out.println("Added epsilons");
+    }
 }

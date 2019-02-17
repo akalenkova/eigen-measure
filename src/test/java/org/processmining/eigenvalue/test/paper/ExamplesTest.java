@@ -13,6 +13,7 @@ import org.processmining.eigenvalue.automata.TopologicalEntropyComputer;
 import org.processmining.eigenvalue.data.EntropyPrecisionRecall;
 import org.processmining.eigenvalue.data.EntropyResult;
 import org.processmining.eigenvalue.test.TestUtils;
+import org.processmining.framework.plugin.ProMCanceller;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -439,5 +440,18 @@ public class ExamplesTest {
 
     public static EntropyResult getTopologicalEntropy(Automaton a, String name) {
         return TopologicalEntropyComputer.getTopologicalEntropy(a, name, Utils.NOT_CANCELLER);
+    }
+    
+    /**
+     * Adding silent transitions
+     * 
+     * @param a
+     * @return
+     */
+    public static Automaton addTau(Automaton a) {
+        Automaton automatonWithTau = a.clone();
+        Utils.addTau(automatonWithTau);
+        automatonWithTau.determinize(ProMCanceller.NEVER_CANCEL);
+        return automatonWithTau;
     }
 }
