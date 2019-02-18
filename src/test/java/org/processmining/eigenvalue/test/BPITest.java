@@ -2,6 +2,7 @@ package org.processmining.eigenvalue.test;
 
 import org.deckfour.xes.info.XLogInfo;
 import org.deckfour.xes.info.XLogInfoFactory;
+import org.deckfour.xes.info.impl.XLogInfoImpl;
 import org.deckfour.xes.model.XLog;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -44,7 +45,6 @@ public class BPITest extends PrecisionRecallTest {
      *
      * Stores the results as .csv file in {@link TestUtils#TEST_OUTPUT_FOLDER} in the file real_logs_results.csv
      */
-    @Ignore
     @Test
     public void testComputePrecisionRecall() {
         File outFolder = new File(TestUtils.TEST_OUTPUT_FOLDER);
@@ -55,7 +55,8 @@ public class BPITest extends PrecisionRecallTest {
             writer.write(EntropyPrecisionRecall.getHeader()+"\n");
             for (XLog log : TestUtils.getBPILogs()) {
                 try {
-                    writer.write(getResultString(log)+"\n");
+                	writer.write(getResultString(log, false, false)+"\n");
+                    writer.write(getResultString(log, true, true)+"\n");
                     writer.flush();
                 } catch (ProcessTree2Petrinet.NotYetImplementedException e) {
                     e.printStackTrace();
@@ -77,6 +78,20 @@ public class BPITest extends PrecisionRecallTest {
 
         long startTime = System.currentTimeMillis();
         EntropyPrecisionRecall precisionRecall = PrecisionRecallComputer.getPrecisionAndRecall(this.context, Utils.NOT_CANCELLER, log,  net);
+        System.out.println("Computing Precision and Recall for "+Utils.getName(log,"<log>")+" took "+((System.currentTimeMillis()-startTime)/1000.)+"s");
+
+        return(precisionRecall.getCSVString());
+    }
+    
+
+    private String getResultString(XLog log, boolean tauModel, boolean tauLog) throws ProcessTree2Petrinet.NotYetImplementedException, ProcessTree2Petrinet.InvalidProcessTreeException {
+        ProcessTree model = TreeUtils.mineTree(log);
+
+        ProcessTree2Petrinet.PetrinetWithMarkings petrinetWithMarkings = ProcessTree2Petrinet.convert(model, true);
+        AcceptingPetriNet net = new AcceptingPetriNetImpl(petrinetWithMarkings.petrinet, petrinetWithMarkings.initialMarking, petrinetWithMarkings.finalMarking);
+
+        long startTime = System.currentTimeMillis();
+        EntropyPrecisionRecall precisionRecall = PrecisionRecallComputer.getPrecisionAndRecall(this.context, Utils.NOT_CANCELLER, log, net, XLogInfoImpl.NAME_CLASSIFIER, tauModel, tauLog);
         System.out.println("Computing Precision and Recall for "+Utils.getName(log,"<log>")+" took "+((System.currentTimeMillis()-startTime)/1000.)+"s");
 
         return(precisionRecall.getCSVString());

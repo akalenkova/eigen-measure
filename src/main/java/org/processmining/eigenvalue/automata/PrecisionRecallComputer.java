@@ -206,6 +206,107 @@ public class PrecisionRecallComputer {
         return getPrecisionAndRecall(aM, net.getNet().getLabel(), aL, "Log", aLM, 1.0, Utils.NOT_CANCELLER);
     }
     
+    
+    /**
+     * Calculating precision and recall with possible tau
+     * 
+     * @param context
+     * @param canceller
+     * @param log
+     * @param net
+     * @param classifier
+     * @param resultL
+     * @param tauModel
+     * @param tauLog
+     * @return
+     * @throws CancelledException
+     */
+    public static EntropyPrecisionRecall getPrecisionAndRecall(PluginContext context, ProMCanceller canceller, 
+    		XLog log, AcceptingPetriNet net, XEventClassifier classifier, 
+    		boolean tauModel, boolean tauLog) {
+        
+    	String name = Utils.getName(net.getNet(),"M");
+    	if(tauModel) {
+    		name+="_tau";
+    	}
+        String logName = Utils.getName(log,"L");
+        if(tauLog) {
+        	logName+="_tau";
+    	}
+
+        if (context != null && context.getProgress() != null) {
+            context.getProgress().setValue(0);
+            context.getProgress().setMaximum(100);
+        }
+        log(context, "Starting precision computation for "+name, 1);
+        try {
+        	checkCancelled(canceller);
+        } catch (CancelledException e) {
+        	e.printStackTrace();
+        }
+
+        // prepare
+        EfficientLog elog = new EfficientLog(log, classifier);
+        String[] activities = elog.getActivities();
+        log(context, "Converted log to efficient log.", 28);
+        if (canceller.isCancelled()){
+            return null;
+        }
+        String[] names = getTransitionNames(net, activities);
+
+        AcceptingPetriNet projectedNet = ProjectPetriNetOntoActivities.project(net, canceller, names);
+        Automaton aM = null;
+        try {
+        	aM = AcceptingPetriNet2automaton.convert(projectedNet, Integer.MAX_VALUE, canceller);
+            if(tauModel) {
+            	Utils.addTau(aM);
+            	aM.determinize(ProMCanceller.NEVER_CANCEL);
+            	aM.minimize(ProMCanceller.NEVER_CANCEL);
+            }
+        } catch (AutomatonFailedException e){
+            e.printStackTrace();
+        }
+        log(context, "Converted net to automaton.", 35);
+        
+        try {
+        	checkCancelled(canceller);
+        } catch (CancelledException e) {
+        	e.printStackTrace();
+        }
+
+        log(context, "Projected net to (all) activities.", 30);
+        EntropyPrecisionRecall precision = null;
+        try {
+        	EntropyResult resultM = getResult(name, net.getNet().getNodes().size(), TopologicalEntropyComputer.getTopologicalEntropy(aM, name, canceller));
+            log(context, "Computed model automaton topology.", 60);
+            checkCancelled(canceller);
+
+            RunAutomaton ra = new RunAutomaton(aM, canceller);
+            double fittingTracesFraction;
+            EntropyResult resultLM;
+            
+                System.out.println("Processing log" + System.currentTimeMillis());
+            	Pair<Double, Automaton> pair = processLog(elog, ra, false, canceller, tauLog, names);
+            	System.out.println("End processing log" + System.currentTimeMillis());
+            	fittingTracesFraction = pair.getA();
+                log(context, "Projected log into model.", 70);
+                checkCancelled(canceller);
+
+                Automaton aL = pair.getB(); // log automaton of accepted traces
+                Automaton aML = aL.intersection(aM, canceller);
+                aML.minimize(canceller);
+                resultLM = getResult(logName, elog.size(), TopologicalEntropyComputer.getTopologicalEntropy(aML, logName, canceller));
+
+                log(context, "Computed log-model automaton topology.", 75);
+            
+            EntropyResult resultL = getResult(logName, elog.size(), TopologicalEntropyComputer.getTopologicalEntropy(aL, logName, canceller));
+            precision = new EntropyPrecisionRecall(resultLM, resultM, resultL, fittingTracesFraction);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return precision;
+    }
+    
     private static void checkCancelled(ProMCanceller canceller) throws CancelledException {
         if (canceller.isCancelled()){
             throw new CancelledException();
@@ -335,6 +436,50 @@ public class PrecisionRecallComputer {
             return Pair.of(replayableTraces/(double)log.size(), logAutomaton);
         }
     }
+    
+    /**
+     * Process log with possible tau
+     * 
+     * @param log
+     * @param modelAutomaton
+     * @param selectOnlyFittingTraces
+     * @param canceller
+     * @param tauLog
+     * @param names
+     * @return
+     */
+    public static Pair<Double, Automaton> processLog(EfficientLog log, RunAutomaton modelAutomaton, 
+    		boolean selectOnlyFittingTraces, ProMCanceller canceller, boolean tauLog, String... names) {
+        short[] projectionKey = log.getProjectionKey(names);
+        int replayableTraces = 0;
+        Automaton logAutomaton = null;
+
+        for(int traceIndex = 0; traceIndex < log.size(); ++traceIndex) {
+        	Pair<Boolean, Automaton> p = processTrace(modelAutomaton, logAutomaton, 
+            		log, traceIndex, projectionKey, selectOnlyFittingTraces, canceller);
+            if (canceller.isCancelled() || p == null) {
+                return null;
+            }
+            logAutomaton = p.getB();
+            if (p.getA()) {
+                ++replayableTraces;
+            }
+        }
+        if (logAutomaton != null) {
+        	if(tauLog) {
+        		logAutomaton.minimize(canceller);
+        		Utils.addTau(logAutomaton);
+        		logAutomaton.determinize(canceller);
+        	}
+            logAutomaton.minimize(canceller);
+        }
+        if (canceller.isCancelled()) {
+            return null;
+        } else {
+            return Pair.of(replayableTraces/(double)log.size(), logAutomaton);
+        }
+    }
+
 
     /**
      * Incorporates fitting traces into the log automaton.
