@@ -17,8 +17,10 @@ import org.processmining.framework.plugin.ProMCanceller;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -200,6 +202,37 @@ public class ExamplesTest {
         wire(s1, 'e', s1);
         return a;
     }
+    
+    
+    /**
+     * Construct model for motivating example
+     * 
+     * @return
+     */
+    public static Automaton getMotivModel() {
+        Automaton a = new Automaton();
+        State s1 = new State();
+        State s2 = new State();
+        State s3 = new State();
+        State s4 = new State();
+        State s5 = new State();
+        State s6 = new State();
+        State s7 = new State();
+        
+        a.setInitialState(s1);
+        s7.setAccept(true);
+       
+        wire(s1, 'a', s2);
+        wire(s2, 'b', s3);
+        wire(s2, 'c', s4);
+        wire(s3, 'c', s5);
+        wire(s4, 'b', s5);
+        wire(s5, 'd', s6);
+        wire(s6, 'e', s7);
+        
+        return a;
+    }
+    
 
     public static Automaton getL1() {
         return TestUtils.getLogAutomaton("abde", "abcbcde");
@@ -211,6 +244,19 @@ public class ExamplesTest {
 
     public static Automaton getL3() {
         return TestUtils.getLogAutomaton("abcbcde", "abbf", "afe");
+    }
+    
+    /**
+     * Define logs for motivating example
+     * 
+     * @return
+     */
+    public static Automaton getL1Motiv() {
+        return TestUtils.getLogAutomaton("abbce");
+    }
+    
+    public static Automaton getL2Motiv() {
+        return TestUtils.getLogAutomaton("abbcde");
     }
 
     @Test
@@ -383,6 +429,37 @@ public class ExamplesTest {
     public void testL3Matrix() {
         toCSV(getL3(), "L3");
     }
+    
+    @Test
+	public void testMotivForPaper() throws IOException {
+
+		FileOutputStream fileOut = new FileOutputStream(TestUtils.TEST_OUTPUT_FOLDER + "/motiv_results.csv");
+		OutputStreamWriter dataWriter = new OutputStreamWriter(fileOut);
+
+
+		Automaton a = getMotivModel();
+
+		EntropyPrecisionRecall result1 = 
+				getPrecisionAndRecall("motiv_model","motiv_log1", a, getL1Motiv());
+		EntropyPrecisionRecall result2 = 
+				getPrecisionAndRecall("motiv_model","motiv_log2", a, getL2Motiv());
+		
+		EntropyPrecisionRecall result3 = 
+				getPrecisionAndRecall("motiv_model_tau","motiv_log1_tau", addTau(a), addTau(getL1Motiv()));
+		EntropyPrecisionRecall result4 = 
+				getPrecisionAndRecall("motiv_model_tau","motiv_log2_tau", addTau(a), addTau(getL2Motiv()));
+					
+		dataWriter.write(new String(Joiner.on(";")
+				.join(new Object[] {
+						result1.getPrecision(), result1.getRecall(),
+						result2.getPrecision(), result2.getRecall(),
+						result3.getPrecision(), result3.getRecall(),
+						result4.getPrecision(), result4.getRecall()
+})
+				+ "\n"));
+
+		dataWriter.close();
+	}
 
 
     private void toCSV(Automaton a, String name) {

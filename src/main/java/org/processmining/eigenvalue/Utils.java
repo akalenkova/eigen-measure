@@ -181,8 +181,6 @@ public class Utils {
         	}
         	
         }
-    	System.out.println("Adding epsilons");
         a.addEpsilons(pairs, ProMCanceller.NEVER_CANCEL);
-        System.out.println("Added epsilons");
     }
 }
