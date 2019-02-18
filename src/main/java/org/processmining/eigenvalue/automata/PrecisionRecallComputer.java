@@ -165,7 +165,47 @@ public class PrecisionRecallComputer {
         }
         return precision;
     }
+    
+    
+    /**
+     * Calculate precision and recall with possible TAU for model
+     * 
+     * @param context
+     * @param canceller
+     * @param log
+     * @param net
+     * @param tauModel
+     * @return
+     */
+    public static EntropyPrecisionRecall getPrecisionAndRecall(PluginContext context, ProMCanceller canceller, 
+    		Automaton aL, AcceptingPetriNet net, boolean tauModel) {
+    	if (context != null && context.getProgress() != null) {
+            context.getProgress().setValue(0);
+            context.getProgress().setMaximum(100);
+        }
 
+        try{
+        	checkCancelled(canceller);
+        } catch(CancelledException e) {
+        	e.printStackTrace();
+        }
+
+        Automaton aM = null;
+        try {
+            aM = AcceptingPetriNet2automaton.convert(net, Integer.MAX_VALUE, canceller);
+            if(tauModel) {
+            	Utils.addTau(aM);
+                aM.determinize(ProMCanceller.NEVER_CANCEL);
+                aM.minimize(ProMCanceller.NEVER_CANCEL);
+            }
+        } catch (AutomatonFailedException e){
+            e.printStackTrace();
+        }
+        Automaton aLM = aM.intersection(aL, Utils.NOT_CANCELLER);
+        
+        return getPrecisionAndRecall(aM, net.getNet().getLabel(), aL, "Log", aLM, 1.0, Utils.NOT_CANCELLER);
+    }
+    
     private static void checkCancelled(ProMCanceller canceller) throws CancelledException {
         if (canceller.isCancelled()){
             throw new CancelledException();

@@ -7,6 +7,8 @@ import dk.brics.automaton2.Transition;
 import no.uib.cipr.matrix.sparse.CompColMatrix;
 import org.junit.Assert;
 import org.junit.Test;
+import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
+import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetImpl;
 import org.processmining.eigenvalue.Utils;
 import org.processmining.eigenvalue.automata.PrecisionRecallComputer;
 import org.processmining.eigenvalue.automata.TopologicalEntropyComputer;
@@ -14,6 +16,11 @@ import org.processmining.eigenvalue.data.EntropyPrecisionRecall;
 import org.processmining.eigenvalue.data.EntropyResult;
 import org.processmining.eigenvalue.test.TestUtils;
 import org.processmining.framework.plugin.ProMCanceller;
+import org.processmining.models.graphbased.directed.petrinet.Petrinet;
+import org.processmining.models.graphbased.directed.petrinet.elements.Place;
+import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetImpl;
+import org.processmining.models.semantics.petrinet.Marking;
+import org.processmining.plugins.stochasticpetrinet.StochasticNetUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -42,11 +49,19 @@ public class ExamplesTest {
         charMap.put('d',"\u0003".charAt(0));
         charMap.put('e',"\u0004".charAt(0));
         charMap.put('f',"\u0005".charAt(0));
+        charMap.put('g',"\u0006".charAt(0));
+        charMap.put('h',"\u0007".charAt(0));
+        charMap.put('i',"\u0008".charAt(0));
+        charMap.put('u',"\u0009".charAt(0));
+        charMap.put('v',"\u0010".charAt(0));
+        charMap.put('w',"\u0011".charAt(0));
     }
 
     public static void wire(State from, char label, State to){
         from.addTransition(new Transition(charMap.get(label),to));
     }
+    
+    private static final String TAU = "tau";
 
     public static Automaton getABC() {
         Automaton a = new Automaton();
@@ -281,7 +296,876 @@ public class ExamplesTest {
         return a;
     }
     
+	/**
+	 * Define models for qualitative test
+	 * @return
+	 */
+    public static AcceptingPetriNet getOriginalModel() {
 
+		Petrinet net = new PetrinetImpl("Original model");
+		Place p1 = net.addPlace("p1");
+		Place p2 = net.addPlace("p2");
+		Place p3 = net.addPlace("p3");
+		Place p4 = net.addPlace("p4");
+		Place p5 = net.addPlace("p5");
+		Place p6 = net.addPlace("p6");
+		Place p7 = net.addPlace("p7");
+		Place p8 = net.addPlace("p8");
+		Place p9 = net.addPlace("p9");
+		Place p10 = net.addPlace("p10");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition aTransition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition bTransition = net
+				.addTransition(charMap.get('b').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition cTransition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition dTransition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition eTransition = net
+				.addTransition(charMap.get('e').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition fTransition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition gTransition = net
+				.addTransition(charMap.get('g').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition hTransition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition iTransition = net
+				.addTransition(charMap.get('i').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tauTransition = net
+				.addTransition(TAU);
+		tauTransition.setInvisible(true);
+
+		net.addArc(p1, aTransition);
+		net.addArc(aTransition, p2);
+		net.addArc(p2, bTransition);
+		net.addArc(p2, cTransition);
+		net.addArc(cTransition, p3);
+		net.addArc(p3, tauTransition);
+		net.addArc(p3, gTransition);
+		net.addArc(bTransition, p4);
+		net.addArc(cTransition, p4);
+		net.addArc(p4, dTransition);
+		net.addArc(bTransition, p5);
+		net.addArc(p5, eTransition);
+		net.addArc(tauTransition, p6);
+		net.addArc(gTransition, p6);
+		net.addArc(p6, hTransition);
+		net.addArc(dTransition, p7);
+		net.addArc(p7, eTransition);
+		net.addArc(p7, fTransition);
+		net.addArc(hTransition, p8);
+		net.addArc(p8, fTransition);
+		net.addArc(eTransition, p9);
+		net.addArc(fTransition, p9);
+		net.addArc(p9, iTransition);
+		net.addArc(iTransition, p10);
+
+		Marking initialMarking = new Marking();
+		initialMarking.add(p1);
+
+		Marking finalMarking = new Marking();
+		finalMarking.add(p10);
+
+		AcceptingPetriNet acceptingNet = new AcceptingPetriNetImpl(net, initialMarking, finalMarking);
+
+		return acceptingNet;
+	}
+
+	public static AcceptingPetriNet getOneTrace() {
+
+		Petrinet net = new PetrinetImpl("One trace");
+		Place p1 = net.addPlace("p1");
+		Place p2 = net.addPlace("p2");
+		Place p3 = net.addPlace("p3");
+		Place p4 = net.addPlace("p4");
+		Place p5 = net.addPlace("p5");
+		Place p6 = net.addPlace("p6");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition aTransition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition bTransition = net
+				.addTransition(charMap.get('b').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition dTransition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition eTransition = net
+				.addTransition(charMap.get('e').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition iTransition = net
+				.addTransition(charMap.get('i').toString());
+
+		net.addArc(p1, aTransition);
+		net.addArc(aTransition, p2);
+		net.addArc(p2, bTransition);
+		net.addArc(bTransition, p3);
+		net.addArc(p3, dTransition);
+		net.addArc(dTransition, p4);
+		net.addArc(p4, eTransition);
+		net.addArc(eTransition, p5);
+		net.addArc(p5, iTransition);
+		net.addArc(iTransition, p6);
+
+		Marking initialMarking = new Marking();
+		initialMarking.add(p1);
+
+		Marking finalMarking = new Marking();
+		finalMarking.add(p6);
+
+		AcceptingPetriNet acceptingNet = new AcceptingPetriNetImpl(net, initialMarking, finalMarking);
+
+		return acceptingNet;
+	}
+
+	public static AcceptingPetriNet getSeparateTraces() {
+
+		Petrinet net = new PetrinetImpl("Separate traces");
+
+		Place p1 = net.addPlace("p1");
+		Place p2 = net.addPlace("p2");
+		Place p3 = net.addPlace("p3");
+		Place p4 = net.addPlace("p4");
+		Place p5 = net.addPlace("p5");
+		Place p6 = net.addPlace("p6");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition a1Transition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition b1Transition = net
+				.addTransition(charMap.get('b').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition d1Transition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition e1Transition = net
+				.addTransition(charMap.get('e').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition i1Transition = net
+				.addTransition(charMap.get('i').toString());
+
+		net.addArc(p1, a1Transition);
+		net.addArc(a1Transition, p2);
+		net.addArc(p2, b1Transition);
+		net.addArc(b1Transition, p3);
+		net.addArc(p3, d1Transition);
+		net.addArc(d1Transition, p4);
+		net.addArc(p4, e1Transition);
+		net.addArc(e1Transition, p5);
+		net.addArc(p5, i1Transition);
+		net.addArc(i1Transition, p6);
+
+		Place p7 = net.addPlace("p7");
+		Place p8 = net.addPlace("p8");
+		Place p9 = net.addPlace("p9");
+		Place p10 = net.addPlace("p10");
+		Place p11 = net.addPlace("p11");
+		Place p12 = net.addPlace("p12");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition a2Transition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition c2Transition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition d2Transition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition g2Transition = net
+				.addTransition(charMap.get('g').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition h2Transition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition f2Transition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition i2Transition = net
+				.addTransition(charMap.get('i').toString());
+
+		net.addArc(p1, a2Transition);
+		net.addArc(a2Transition, p7);
+		net.addArc(p7, c2Transition);
+		net.addArc(c2Transition, p8);
+		net.addArc(p8, d2Transition);
+		net.addArc(d2Transition, p9);
+		net.addArc(p9, g2Transition);
+		net.addArc(g2Transition, p10);
+		net.addArc(p10, h2Transition);
+		net.addArc(h2Transition, p11);
+		net.addArc(p11, f2Transition);
+		net.addArc(f2Transition, p12);
+		net.addArc(p12, i2Transition);
+		net.addArc(i2Transition, p6);
+
+		Place p13 = net.addPlace("p13");
+		Place p14 = net.addPlace("p14");
+		Place p15 = net.addPlace("p15");
+		Place p16 = net.addPlace("p16");
+		Place p17 = net.addPlace("p17");
+		Place p18 = net.addPlace("p18");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition a3Transition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition c3Transition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition g3Transition = net
+				.addTransition(charMap.get('g').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition d3Transition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition h3Transition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition f3Transition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition i3Transition = net
+				.addTransition(charMap.get('i').toString());
+
+		net.addArc(p1, a3Transition);
+		net.addArc(a3Transition, p13);
+		net.addArc(p13, c3Transition);
+		net.addArc(c3Transition, p14);
+		net.addArc(p14, g3Transition);
+		net.addArc(g3Transition, p15);
+		net.addArc(p15, d3Transition);
+		net.addArc(d3Transition, p16);
+		net.addArc(p16, h3Transition);
+		net.addArc(h3Transition, p17);
+		net.addArc(p17, f3Transition);
+		net.addArc(f3Transition, p18);
+		net.addArc(p18, i3Transition);
+		net.addArc(i3Transition, p6);
+
+		Place p19 = net.addPlace("p19");
+		Place p20 = net.addPlace("p20");
+		Place p21 = net.addPlace("p21");
+		Place p22 = net.addPlace("p22");
+		Place p23 = net.addPlace("p23");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition a4Transition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition c4Transition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition h4Transition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition d4Transition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition f4Transition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition i4Transition = net
+				.addTransition(charMap.get('i').toString());
+
+		net.addArc(p1, a4Transition);
+		net.addArc(a4Transition, p19);
+		net.addArc(p19, c4Transition);
+		net.addArc(c4Transition, p20);
+		net.addArc(p20, h4Transition);
+		net.addArc(h4Transition, p21);
+		net.addArc(p21, d4Transition);
+		net.addArc(d4Transition, p22);
+		net.addArc(p22, f4Transition);
+		net.addArc(f4Transition, p23);
+		net.addArc(p23, i4Transition);
+		net.addArc(i4Transition, p6);
+
+		Place p24 = net.addPlace("p24");
+		Place p25 = net.addPlace("p25");
+		Place p26 = net.addPlace("p26");
+		Place p27 = net.addPlace("p27");
+		Place p28 = net.addPlace("p28");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition a5Transition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition c5Transition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition d5Transition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition h5Transition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition f5Transition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition i5Transition = net
+				.addTransition(charMap.get('i').toString());
+
+		net.addArc(p1, a5Transition);
+		net.addArc(a5Transition, p24);
+		net.addArc(p24, c5Transition);
+		net.addArc(c5Transition, p25);
+		net.addArc(p25, d5Transition);
+		net.addArc(d5Transition, p26);
+		net.addArc(p26, h5Transition);
+		net.addArc(h5Transition, p27);
+		net.addArc(p27, f5Transition);
+		net.addArc(f5Transition, p28);
+		net.addArc(p28, i5Transition);
+		net.addArc(i5Transition, p6);
+
+		Marking initialMarking = new Marking();
+		initialMarking.add(p1);
+
+		Marking finalMarking = new Marking();
+		finalMarking.add(p6);
+
+		AcceptingPetriNet acceptingNet = new AcceptingPetriNetImpl(net, initialMarking, finalMarking);
+
+		return acceptingNet;
+	}
+
+	public static AcceptingPetriNet getFlowerModel() {
+
+		Petrinet net = new PetrinetImpl("Flower model");
+		Place p1 = net.addPlace("p1");
+		Place p2 = net.addPlace("p2");
+		Place p3 = net.addPlace("p3");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition aTransition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition bTransition = net
+				.addTransition(charMap.get('b').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition cTransition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition dTransition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition eTransition = net
+				.addTransition(charMap.get('e').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition fTransition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition gTransition = net
+				.addTransition(charMap.get('g').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition hTransition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition iTransition = net
+				.addTransition(charMap.get('i').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau1Transition = net
+				.addTransition(TAU);
+		tau1Transition.setInvisible(true);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau2Transition = net
+				.addTransition(TAU);
+		tau2Transition.setInvisible(true);
+
+		net.addArc(p1, tau1Transition);
+		net.addArc(tau1Transition, p2);
+		net.addArc(p2, aTransition);
+		net.addArc(aTransition, p2);
+		net.addArc(p2, bTransition);
+		net.addArc(bTransition, p2);
+		net.addArc(p2, cTransition);
+		net.addArc(cTransition, p2);
+		net.addArc(p2, dTransition);
+		net.addArc(dTransition, p2);
+		net.addArc(p2, eTransition);
+		net.addArc(eTransition, p2);
+		net.addArc(p2, fTransition);
+		net.addArc(fTransition, p2);
+		net.addArc(p2, gTransition);
+		net.addArc(gTransition, p2);
+		net.addArc(p2, hTransition);
+		net.addArc(hTransition, p2);
+		net.addArc(p2, iTransition);
+		net.addArc(iTransition, p2);
+		net.addArc(p2, tau2Transition);
+		net.addArc(tau2Transition, p3);
+
+		Marking initialMarking = new Marking();
+		initialMarking.add(p1);
+
+		Marking finalMarking = new Marking();
+		finalMarking.add(p3);
+
+		AcceptingPetriNet acceptingNet = new AcceptingPetriNetImpl(net, initialMarking, finalMarking);
+
+		return acceptingNet;
+	}
+
+	public static AcceptingPetriNet getAllParallelModel() {
+
+		Petrinet net = new PetrinetImpl("All parallel model");
+		Place p1 = net.addPlace("p1");
+		Place p2 = net.addPlace("p2");
+		Place p3 = net.addPlace("p3");
+		Place p4 = net.addPlace("p4");
+		Place p5 = net.addPlace("p5");
+		Place p6 = net.addPlace("p6");
+		Place p7 = net.addPlace("p7");
+		Place p8 = net.addPlace("p8");
+		Place p9 = net.addPlace("p9");
+		Place p10 = net.addPlace("p10");
+		Place p11 = net.addPlace("p11");
+		Place p12 = net.addPlace("p12");
+		Place p13 = net.addPlace("p13");
+		Place p14 = net.addPlace("p14");
+		Place p15 = net.addPlace("p15");
+		Place p16 = net.addPlace("p16");
+		Place p17 = net.addPlace("p17");
+		Place p18 = net.addPlace("p18");
+		Place p19 = net.addPlace("p19");
+		Place p20 = net.addPlace("p20");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition aTransition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition bTransition = net
+				.addTransition(charMap.get('b').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition cTransition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition dTransition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition eTransition = net
+				.addTransition(charMap.get('e').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition fTransition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition gTransition = net
+				.addTransition(charMap.get('g').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition hTransition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition iTransition = net
+				.addTransition(charMap.get('i').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau1Transition = net
+				.addTransition(TAU);
+		tau1Transition.setInvisible(true);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau2Transition = net
+				.addTransition(TAU);
+		tau2Transition.setInvisible(true);
+
+		net.addArc(p1, tau1Transition);
+		net.addArc(tau1Transition, p2);
+		net.addArc(tau1Transition, p3);
+		net.addArc(tau1Transition, p4);
+		net.addArc(tau1Transition, p5);
+		net.addArc(tau1Transition, p6);
+		net.addArc(tau1Transition, p7);
+		net.addArc(tau1Transition, p8);
+		net.addArc(tau1Transition, p9);
+		net.addArc(tau1Transition, p10);
+		net.addArc(p2, aTransition);
+		net.addArc(p3, bTransition);
+		net.addArc(p4, cTransition);
+		net.addArc(p5, dTransition);
+		net.addArc(p6, eTransition);
+		net.addArc(p7, fTransition);
+		net.addArc(p8, gTransition);
+		net.addArc(p9, hTransition);
+		net.addArc(p10, iTransition);
+		net.addArc(aTransition, p11);
+		net.addArc(bTransition, p12);
+		net.addArc(cTransition, p13);
+		net.addArc(dTransition, p14);
+		net.addArc(eTransition, p15);
+		net.addArc(fTransition, p16);
+		net.addArc(gTransition, p17);
+		net.addArc(hTransition, p18);
+		net.addArc(iTransition, p19);
+		net.addArc(p11, tau2Transition);
+		net.addArc(p12, tau2Transition);
+		net.addArc(p13, tau2Transition);
+		net.addArc(p14, tau2Transition);
+		net.addArc(p15, tau2Transition);
+		net.addArc(p16, tau2Transition);
+		net.addArc(p17, tau2Transition);
+		net.addArc(p18, tau2Transition);
+		net.addArc(p19, tau2Transition);
+		net.addArc(tau2Transition, p20);
+
+		Marking initialMarking = new Marking();
+		initialMarking.add(p1);
+
+		Marking finalMarking = new Marking();
+		finalMarking.add(p20);
+
+		AcceptingPetriNet acceptingNet = new AcceptingPetriNetImpl(net, initialMarking, finalMarking);
+
+		return acceptingNet;
+	}
+
+	public static AcceptingPetriNet getRoundRobinModel() {
+
+		Petrinet net = new PetrinetImpl("Round robin model");
+		Place p1 = net.addPlace("p1");
+		Place p2 = net.addPlace("p2");
+		Place p3 = net.addPlace("p3");
+		Place p4 = net.addPlace("p4");
+		Place p5 = net.addPlace("p5");
+		Place p6 = net.addPlace("p6");
+		Place p7 = net.addPlace("p7");
+		Place p8 = net.addPlace("p8");
+		Place p9 = net.addPlace("p9");
+		Place p10 = net.addPlace("p10");
+		Place p11 = net.addPlace("p11");
+		Place p12 = net.addPlace("p12");
+		Place p13 = net.addPlace("p13");
+		Place p14 = net.addPlace("p14");
+		Place p15 = net.addPlace("p15");
+		Place p16 = net.addPlace("p16");
+		Place p17 = net.addPlace("p17");
+		Place p18 = net.addPlace("p18");
+		Place p19 = net.addPlace("p19");
+		Place p20 = net.addPlace("p20");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition aTransition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition bTransition = net
+				.addTransition(charMap.get('b').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition cTransition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition dTransition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition eTransition = net
+				.addTransition(charMap.get('e').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition fTransition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition gTransition = net
+				.addTransition(charMap.get('g').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition hTransition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition iTransition = net
+				.addTransition(charMap.get('i').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau1Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau2Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau3Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau4Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau5Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau6Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau7Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau8Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau9Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau10Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau11Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau12Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau13Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau14Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau15Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau16Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau17Transition = net
+				.addTransition(TAU);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau18Transition = net
+				.addTransition(TAU);
+
+		tau1Transition.setInvisible(true);
+		tau2Transition.setInvisible(true);
+		tau3Transition.setInvisible(true);
+		tau4Transition.setInvisible(true);
+		tau5Transition.setInvisible(true);
+		tau6Transition.setInvisible(true);
+		tau7Transition.setInvisible(true);
+		tau8Transition.setInvisible(true);
+		tau9Transition.setInvisible(true);
+		tau10Transition.setInvisible(true);
+		tau11Transition.setInvisible(true);
+		tau12Transition.setInvisible(true);
+		tau13Transition.setInvisible(true);
+		tau14Transition.setInvisible(true);
+		tau15Transition.setInvisible(true);
+		tau16Transition.setInvisible(true);
+		tau17Transition.setInvisible(true);
+		tau18Transition.setInvisible(true);
+
+		net.addArc(p2, aTransition);
+		net.addArc(aTransition, p3);
+		net.addArc(p3, bTransition);
+		net.addArc(bTransition, p4);
+		net.addArc(p4, cTransition);
+		net.addArc(cTransition, p5);
+		net.addArc(p5, dTransition);
+		net.addArc(dTransition, p6);
+		net.addArc(p6, eTransition);
+		net.addArc(eTransition, p7);
+		net.addArc(p7, fTransition);
+		net.addArc(fTransition, p8);
+		net.addArc(p8, gTransition);
+		net.addArc(gTransition, p9);
+		net.addArc(p9, hTransition);
+		net.addArc(hTransition, p10);
+		net.addArc(p10, iTransition);
+		net.addArc(iTransition, p2);
+
+		net.addArc(p1, tau1Transition);
+		net.addArc(p1, tau3Transition);
+		net.addArc(p1, tau5Transition);
+		net.addArc(p1, tau7Transition);
+		net.addArc(p1, tau9Transition);
+		net.addArc(p1, tau11Transition);
+		net.addArc(p1, tau13Transition);
+		net.addArc(p1, tau15Transition);
+		net.addArc(p1, tau17Transition);
+
+		net.addArc(tau2Transition, p20);
+		net.addArc(tau4Transition, p20);
+		net.addArc(tau6Transition, p20);
+		net.addArc(tau8Transition, p20);
+		net.addArc(tau10Transition, p20);
+		net.addArc(tau12Transition, p20);
+		net.addArc(tau14Transition, p20);
+		net.addArc(tau16Transition, p20);
+		net.addArc(tau18Transition, p20);
+
+		net.addArc(p2, tau2Transition);
+		net.addArc(p3, tau4Transition);
+		net.addArc(p4, tau6Transition);
+		net.addArc(p5, tau8Transition);
+		net.addArc(p6, tau10Transition);
+		net.addArc(p7, tau12Transition);
+		net.addArc(p8, tau14Transition);
+		net.addArc(p9, tau16Transition);
+		net.addArc(p10, tau18Transition);
+
+		net.addArc(tau17Transition, p2);
+		net.addArc(tau1Transition, p3);
+		net.addArc(tau3Transition, p4);
+		net.addArc(tau5Transition, p5);
+		net.addArc(tau7Transition, p6);
+		net.addArc(tau9Transition, p7);
+		net.addArc(tau11Transition, p8);
+		net.addArc(tau13Transition, p9);
+		net.addArc(tau15Transition, p10);
+
+		net.addArc(tau1Transition, p11);
+		net.addArc(p11, tau2Transition);
+		net.addArc(tau3Transition, p12);
+		net.addArc(p12, tau4Transition);
+		net.addArc(tau5Transition, p13);
+		net.addArc(p13, tau6Transition);
+		net.addArc(tau7Transition, p14);
+		net.addArc(p14, tau8Transition);
+		net.addArc(tau9Transition, p15);
+		net.addArc(p15, tau10Transition);
+		net.addArc(tau11Transition, p16);
+		net.addArc(p16, tau12Transition);
+		net.addArc(tau13Transition, p17);
+		net.addArc(p17, tau14Transition);
+		net.addArc(tau15Transition, p18);
+		net.addArc(p18, tau16Transition);
+		net.addArc(tau17Transition, p19);
+		net.addArc(p19, tau18Transition);
+
+		Marking initialMarking = new Marking();
+		initialMarking.add(p1);
+
+		Marking finalMarking = new Marking();
+		finalMarking.add(p20);
+
+		AcceptingPetriNet acceptingNet = new AcceptingPetriNetImpl(net, initialMarking, finalMarking);
+
+		return acceptingNet;
+	}
+
+	public static AcceptingPetriNet getHGParallelModel() {
+
+		Petrinet net = new PetrinetImpl("HG Parallel model");
+		Place p1 = net.addPlace("p1");
+		Place p2 = net.addPlace("p2");
+		Place p3 = net.addPlace("p3");
+		Place p4 = net.addPlace("p4");
+		Place p5 = net.addPlace("p5");
+		Place p6 = net.addPlace("p6");
+		Place p7 = net.addPlace("p7");
+		Place p8 = net.addPlace("p8");
+		Place p9 = net.addPlace("p9");
+		Place p10 = net.addPlace("p10");
+		Place p11 = net.addPlace("p11");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition aTransition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition bTransition = net
+				.addTransition(charMap.get('b').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition cTransition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition dTransition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition eTransition = net
+				.addTransition(charMap.get('e').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition fTransition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition gTransition = net
+				.addTransition(charMap.get('g').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition hTransition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition iTransition = net
+				.addTransition(charMap.get('i').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau1Transition = net
+				.addTransition(TAU);
+		tau1Transition.setInvisible(true);
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tau2Transition = net
+				.addTransition(TAU);
+		tau2Transition.setInvisible(true);
+
+		net.addArc(p1, aTransition);
+		net.addArc(aTransition, p2);
+		net.addArc(p2, bTransition);
+		net.addArc(p2, cTransition);
+		net.addArc(bTransition, p3);
+		net.addArc(cTransition, p3);
+		net.addArc(cTransition, p4);
+		net.addArc(cTransition, p5);
+		net.addArc(bTransition, p6);
+		net.addArc(p3, dTransition);
+		net.addArc(p4, tau1Transition);
+		net.addArc(p4, gTransition);
+		net.addArc(p5, hTransition);
+		net.addArc(p5, tau2Transition);
+		net.addArc(p6, eTransition);
+		net.addArc(dTransition, p7);
+		net.addArc(tau1Transition, p8);
+		net.addArc(gTransition, p8);
+		net.addArc(tau2Transition, p9);
+		net.addArc(hTransition, p9);
+		net.addArc(p7, eTransition);
+		net.addArc(p7, fTransition);
+		net.addArc(p8, fTransition);
+		net.addArc(p9, fTransition);
+		net.addArc(eTransition, p10);
+		net.addArc(fTransition, p10);
+		net.addArc(p10, iTransition);
+		net.addArc(iTransition, p11);
+
+		Marking initialMarking = new Marking();
+		initialMarking.add(p1);
+
+		Marking finalMarking = new Marking();
+		finalMarking.add(p11);
+
+		AcceptingPetriNet acceptingNet = new AcceptingPetriNetImpl(net, initialMarking, finalMarking);
+
+		return acceptingNet;
+	}
+
+	public static AcceptingPetriNet getHGSelfLoops() {
+
+		Petrinet net = new PetrinetImpl("HG Self-loops model");
+		Place p1 = net.addPlace("p1");
+		Place p2 = net.addPlace("p2");
+		Place p3 = net.addPlace("p3");
+		Place p4 = net.addPlace("p4");
+		Place p5 = net.addPlace("p5");
+		Place p7 = net.addPlace("p7");
+		Place p9 = net.addPlace("p9");
+		Place p10 = net.addPlace("p10");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition aTransition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition bTransition = net
+				.addTransition(charMap.get('b').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition cTransition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition dTransition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition eTransition = net
+				.addTransition(charMap.get('e').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition fTransition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition gTransition = net
+				.addTransition(charMap.get('g').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition hTransition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition iTransition = net
+				.addTransition(charMap.get('i').toString());
+
+		net.addArc(p1, aTransition);
+		net.addArc(aTransition, p2);
+		net.addArc(p2, bTransition);
+		net.addArc(p2, cTransition);
+		net.addArc(cTransition, p3);
+		net.addArc(p3, hTransition);
+		net.addArc(p3, gTransition);
+		net.addArc(gTransition, p3);
+		net.addArc(hTransition, p3);
+		net.addArc(bTransition, p4);
+		net.addArc(cTransition, p4);
+		net.addArc(p4, dTransition);
+		net.addArc(bTransition, p5);
+		net.addArc(p5, eTransition);
+		net.addArc(dTransition, p7);
+		net.addArc(p7, eTransition);
+		net.addArc(p3, fTransition);
+		net.addArc(p7, fTransition);
+		net.addArc(eTransition, p9);
+		net.addArc(fTransition, p9);
+		net.addArc(p9, iTransition);
+		net.addArc(iTransition, p10);
+
+		Marking initialMarking = new Marking();
+		initialMarking.add(p1);
+
+		Marking finalMarking = new Marking();
+		finalMarking.add(p10);
+
+		AcceptingPetriNet acceptingNet = new AcceptingPetriNetImpl(net, initialMarking, finalMarking);
+
+		return acceptingNet;
+	}
+
+	public static AcceptingPetriNet getDSelfLoopModel() {
+
+		Petrinet net = new PetrinetImpl("D Self-loop model");
+		Place p1 = net.addPlace("p1");
+		Place p2 = net.addPlace("p2");
+		Place p3 = net.addPlace("p3");
+		Place p4 = net.addPlace("p4");
+		Place p5 = net.addPlace("p5");
+		Place p6 = net.addPlace("p6");
+		Place p8 = net.addPlace("p8");
+		Place p9 = net.addPlace("p9");
+		Place p10 = net.addPlace("p10");
+
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition aTransition = net
+				.addTransition(charMap.get('a').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition bTransition = net
+				.addTransition(charMap.get('b').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition cTransition = net
+				.addTransition(charMap.get('c').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition dTransition = net
+				.addTransition(charMap.get('d').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition eTransition = net
+				.addTransition(charMap.get('e').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition fTransition = net
+				.addTransition(charMap.get('f').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition gTransition = net
+				.addTransition(charMap.get('g').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition hTransition = net
+				.addTransition(charMap.get('h').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition iTransition = net
+				.addTransition(charMap.get('i').toString());
+		org.processmining.models.graphbased.directed.petrinet.elements.Transition tauTransition = net
+				.addTransition(TAU);
+		tauTransition.setInvisible(true);
+
+		net.addArc(p1, aTransition);
+		net.addArc(aTransition, p2);
+		net.addArc(p2, bTransition);
+		net.addArc(p2, cTransition);
+		net.addArc(cTransition, p3);
+		net.addArc(p3, tauTransition);
+		net.addArc(p3, gTransition);
+		net.addArc(bTransition, p4);
+		net.addArc(cTransition, p4);
+		net.addArc(dTransition, p4);
+		net.addArc(p4, dTransition);
+
+		net.addArc(bTransition, p5);
+		net.addArc(p5, eTransition);
+		net.addArc(tauTransition, p6);
+		net.addArc(gTransition, p6);
+		net.addArc(p6, hTransition);
+		net.addArc(p4, eTransition);
+		net.addArc(p4, fTransition);
+		net.addArc(hTransition, p8);
+		net.addArc(p8, fTransition);
+		net.addArc(eTransition, p9);
+		net.addArc(fTransition, p9);
+		net.addArc(p9, iTransition);
+		net.addArc(iTransition, p10);
+
+		Marking initialMarking = new Marking();
+		initialMarking.add(p1);
+
+		Marking finalMarking = new Marking();
+		finalMarking.add(p10);
+
+		AcceptingPetriNet acceptingNet = new AcceptingPetriNetImpl(net, initialMarking, finalMarking);
+
+		return acceptingNet;
+	}
+    
     public static Automaton getL1() {
         return TestUtils.getLogAutomaton("abde", "abcbcde");
     }
@@ -320,6 +1204,15 @@ public class ExamplesTest {
     public static Automaton getL2Motiv() {
         return TestUtils.getLogAutomaton("abbcde");
     }
+    
+    /**
+     * Define log for qualitative test
+     * @return
+     */
+    public static Automaton getLQualitative() {
+        return TestUtils.getLogAutomaton("abdei", "acdghfi", "acgdhfi", "achdfi", "acdhfi");
+    }
+
 
     @Test
     public void testS1() {
@@ -587,6 +1480,61 @@ public class ExamplesTest {
 
 		dataWriter.close();
 	}
+    
+    /**
+     * Qualitative test
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testQualitative() throws IOException {
+        Map<String, AcceptingPetriNet> models = new TreeMap<>();
+        Map<String, Automaton> logs = new TreeMap<>();
+
+        
+        models.put("Original model", getOriginalModel());
+        models.put("One trace", getOneTrace());
+        models.put("Separate traces", getSeparateTraces());
+        models.put("Flower model", getFlowerModel()); 
+        models.put("HG Parallel model", getHGParallelModel());
+        models.put("HG Self-loops", getHGSelfLoops());
+        models.put("D Self-loop", getDSelfLoopModel());
+        models.put("All Parallel", getAllParallelModel());
+        models.put("Round Robin model", getRoundRobinModel());
+        
+        
+        
+        logs.put("Test log", getLQualitative());
+        TestUtils.outputPNG(getLQualitative(), "Original log");
+        
+        FileOutputStream fileOut = new FileOutputStream(TestUtils.TEST_OUTPUT_FOLDER + "/qualitative_results.csv");
+        OutputStreamWriter dataWriter = new OutputStreamWriter(fileOut);
+        
+       
+      
+        String header = "Model;Log;Recall;Precision;Recall (M'^L')/L';Precision (M'^L')/M';Recall (M^L')/L';Precision (M^L')/M;"
+        		+ "Recall (M'^L)/L;Precision (M'^L)/M';"
+        		+ " \n";
+       
+       dataWriter.write(header);
+       
+        for (String model : models.keySet()){
+            for (String log : logs.keySet()){
+            	EntropyPrecisionRecall result = PrecisionRecallComputer.getPrecisionAndRecall(StochasticNetUtils.getDummyUIContext(),
+                		Utils.NOT_CANCELLER, logs.get(log), models.get(model), false);
+                EntropyPrecisionRecall resultTau = PrecisionRecallComputer.getPrecisionAndRecall(StochasticNetUtils.getDummyUIContext(),
+                		Utils.NOT_CANCELLER, addTau(logs.get(log)), models.get(model), true);
+                EntropyPrecisionRecall resultTauM = PrecisionRecallComputer.getPrecisionAndRecall(StochasticNetUtils.getDummyUIContext(),
+                		Utils.NOT_CANCELLER, logs.get(log), models.get(model), true);
+                EntropyPrecisionRecall resultTauL = PrecisionRecallComputer.getPrecisionAndRecall(StochasticNetUtils.getDummyUIContext(),
+                		Utils.NOT_CANCELLER, addTau(logs.get(log)), models.get(model), false);             
+                dataWriter.write(new String (Joiner.on(";").join(new Object[]{model, log, result.getRecall(), result.getPrecision(), 
+                		resultTau.getRecall(), resultTau.getPrecision(), resultTauL.getRecall(), resultTauL.getPrecision(), 
+                		resultTauM.getRecall(), resultTauM.getPrecision()})+"\n"));
+            }
+        }
+        dataWriter.close();
+    }
 
     private void toCSV(Automaton a, String name) {
         a.setDeterministic(false);
