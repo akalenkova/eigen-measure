@@ -234,6 +234,54 @@ public class ExamplesTest {
     }
     
 
+    /**
+     * Automaton 1 for paper
+     * 
+     * @return
+     */
+    public static Automaton getSimpleABCAutomaton() {
+        Automaton a = new Automaton();
+        State s1 = new State();
+        State s2 = new State();
+        State s3 = new State();
+        State s4 = new State();
+        a.setInitialState(s1);
+        s4.setAccept(true);
+       
+        wire(s1, 'a', s2);
+        wire(s1, 'b', s3);
+        wire(s2, 'b', s4);
+        wire(s2, 'c', s4);
+        wire(s3, 'a', s4);
+        
+        return a;
+    }
+    
+    /**
+     * Automaton 2 for paper
+     * 
+     * @return
+     */
+    public static Automaton getSimpleABCLoopAutomaton() {
+        Automaton a = new Automaton();
+        State s1 = new State();
+        State s2 = new State();
+        State s3 = new State();
+        State s4 = new State();
+        a.setInitialState(s1);
+        s4.setAccept(true);
+       
+        wire(s1, 'a', s2);
+        wire(s1, 'b', s3);
+        wire(s2, 'b', s4);
+        wire(s2, 'c', s4);
+        wire(s3, 'a', s4);
+        wire(s4, 'd', s3);
+        
+        return a;
+    }
+    
+
     public static Automaton getL1() {
         return TestUtils.getLogAutomaton("abde", "abcbcde");
     }
@@ -244,6 +292,20 @@ public class ExamplesTest {
 
     public static Automaton getL3() {
         return TestUtils.getLogAutomaton("abcbcde", "abbf", "afe");
+    }
+    
+    /**
+     * Automata for paper
+     * @return
+     */
+    public static Automaton getLABBA() {
+        return TestUtils.getLogAutomaton("ab", "ba");
+    }
+    public static Automaton getLABBAACBAB() {
+        return TestUtils.getLogAutomaton("","ab","ba","ac","bab");
+    }
+    public static Automaton getLBADBAB() {
+        return TestUtils.getLogAutomaton("bad", "bab");
     }
     
     /**
@@ -430,6 +492,11 @@ public class ExamplesTest {
         toCSV(getL3(), "L3");
     }
     
+    /**
+     * Motivating example
+     * 
+     * @throws IOException
+     */
     @Test
 	public void testMotivForPaper() throws IOException {
 
@@ -460,7 +527,66 @@ public class ExamplesTest {
 
 		dataWriter.close();
 	}
+    
+    /**
+     * Paper example
+     * 
+     * @throws IOException
+     */
+    @Test
+	public void testForPaper() throws IOException {
 
+		FileOutputStream fileOut = new FileOutputStream(TestUtils.TEST_OUTPUT_FOLDER + "/paper_results.csv");
+		OutputStreamWriter dataWriter = new OutputStreamWriter(fileOut);
+
+
+		Automaton a1 = getSimpleABCAutomaton();
+		Automaton a2 = getSimpleABCLoopAutomaton();
+
+		EntropyPrecisionRecall result1 = 
+				getPrecisionAndRecall("AB_model","AB_log", a1, getLABBA());
+		EntropyPrecisionRecall result2 = 
+				getPrecisionAndRecall("AB_model","ABBAAC_log", a1, getLABBAACBAB());
+		EntropyPrecisionRecall result3 = 
+				getPrecisionAndRecall("AB_model","BAA_log", a1, getLBADBAB());
+		EntropyPrecisionRecall result4 = 
+				getPrecisionAndRecall("ABLoop_model","AB_log", a2, getLABBA());
+		EntropyPrecisionRecall result5 = 
+				getPrecisionAndRecall("ABLoop_model","ABBAAC_log", a2, getLABBAACBAB());
+		EntropyPrecisionRecall result6 = 
+				getPrecisionAndRecall("ABLoop_model","BAA_log", a2, getLBADBAB());
+		
+		EntropyPrecisionRecall result7 = 
+				getPrecisionAndRecall("AB_model_tau","AB_log_tau", addTau(a1), addTau(getLABBA()));
+		EntropyPrecisionRecall result8 = 
+				getPrecisionAndRecall("AB_model_tau","ABBAAC_log_tau", addTau(a1), addTau(getLABBAACBAB()));
+		EntropyPrecisionRecall result9 = 
+				getPrecisionAndRecall("AB_model_tau","BAA_log_tau", addTau(a1), addTau(getLBADBAB()));
+		EntropyPrecisionRecall result10 = 
+				getPrecisionAndRecall("ABLoop_model_tau","AB_log_tau", addTau(a2), addTau(getLABBA()));
+		EntropyPrecisionRecall result11 = 
+				getPrecisionAndRecall("ABLoop_model_tau","ABBAAC_log_tau", addTau(a2), addTau(getLABBAACBAB()));
+		EntropyPrecisionRecall result12 = 
+				getPrecisionAndRecall("ABLoop_model_tau","BAA_log_tau", addTau(a2), addTau(getLBADBAB()));
+			
+		dataWriter.write(new String(Joiner.on(";")
+				.join(new Object[] {
+						result1.getPrecision(), result1.getRecall(),
+						result2.getPrecision(), result2.getRecall(),
+						result3.getPrecision(), result3.getRecall(),
+						result4.getPrecision(), result4.getRecall(),
+						result5.getPrecision(), result5.getRecall(),
+						result6.getPrecision(), result6.getRecall(),
+						result7.getPrecision(), result7.getRecall(),
+						result8.getPrecision(), result8.getRecall(),
+						result9.getPrecision(), result9.getRecall(),
+						result10.getPrecision(), result10.getRecall(),
+						result11.getPrecision(), result11.getRecall(),
+						result12.getPrecision(), result12.getRecall()})
+				+ "\n"));
+
+		dataWriter.close();
+	}
 
     private void toCSV(Automaton a, String name) {
         a.setDeterministic(false);
