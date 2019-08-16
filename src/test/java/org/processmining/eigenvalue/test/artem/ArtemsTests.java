@@ -50,7 +50,7 @@ public class ArtemsTests {
         String[] activities = elog.getActivities();
         String[] names = PrecisionRecallComputer.getTransitionNames(net, activities);
 
-        resultL = PrecisionRecallComputer.getEntropyLogResult(context, canceller, logName,  elog, names);
+        resultL = PrecisionRecallComputer.getEntropyLogResult(context, canceller, logName,  elog, names, false);
     }
 
     protected AcceptingPetriNet getAcceptingPetriNet(Object[] netAndMarking) {
@@ -87,7 +87,7 @@ public class ArtemsTests {
             }
             AcceptingPetriNet net = getAcceptingPetriNet(netAndMarking);
 
-            EntropyPrecisionRecall precision = PrecisionRecallComputer.getPrecisionAndRecall(context, canceller, log, net, eventClassifier, resultL);
+            EntropyPrecisionRecall precision = PrecisionRecallComputer.getPrecisionAndRecall(context, canceller, log, net, eventClassifier, false, false);
             results.put(pnmlFile.getName(), precision);
             System.out.println("***********************");
             System.out.println("Eigenvalue-based precision of " + pnmlFile.getName() + " is: " + precision.getPrecision()+"\t comp. took: "+(int)((System.currentTimeMillis()-startTime)/1000.)+"s");

@@ -62,6 +62,10 @@ public class ExamplesTest {
     }
     
     private static final String TAU = "tau";
+    
+    private static final String[] AB = new String[] {"ab", "ba"};
+    private static final String[] ABBAAC = new String[] {"", "ab", "ba", "ac", "bab"};
+    private static final String[] BAA = new String[] {"bad", "bab"};
 
     public static Automaton getABC() {
         Automaton a = new Automaton();
@@ -1183,13 +1187,13 @@ public class ExamplesTest {
      * @return
      */
     public static Automaton getLABBA() {
-        return TestUtils.getLogAutomaton("ab", "ba");
+        return TestUtils.getLogAutomaton(AB);
     }
     public static Automaton getLABBAACBAB() {
-        return TestUtils.getLogAutomaton("","ab","ba","ac","bab");
+        return TestUtils.getLogAutomaton(ABBAAC);
     }
     public static Automaton getLBADBAB() {
-        return TestUtils.getLogAutomaton("bad", "bab");
+        return TestUtils.getLogAutomaton(BAA);
     }
     
     /**
@@ -1228,7 +1232,7 @@ public class ExamplesTest {
         Automaton aL = getL1();
 
 
-        getPrecisionAndRecall(mName, lName, aM, aL);
+        getPrecisionAndRecall(mName, lName, aM, aL, false);
     }
 
     @Test
@@ -1240,7 +1244,7 @@ public class ExamplesTest {
         Automaton aL = getL2();
 
 
-        getPrecisionAndRecall(mName, lName, aM, aL);
+        getPrecisionAndRecall(mName, lName, aM, aL, false);
     }
 
     @Test
@@ -1255,7 +1259,7 @@ public class ExamplesTest {
         aMaL.minimize(Utils.NOT_CANCELLER);
         TestUtils.outputPNG(aMaL, "S1_intersect_L3");
 
-        getPrecisionAndRecall(mName, lName, aM, aL);
+        getPrecisionAndRecall(mName, lName, aM, aL, false);
     }
 
     @Test
@@ -1362,7 +1366,7 @@ public class ExamplesTest {
         //Table<String, String, EntropyPrecisionRecall> results = HashBasedTable.create();
         for (String model : models.keySet()){
             for (String log : logs.keySet()){
-                EntropyPrecisionRecall result = getPrecisionAndRecall(model, log, models.get(model), logs.get(log));
+                EntropyPrecisionRecall result = getPrecisionAndRecall(model, log, models.get(model), logs.get(log), false);
                 writer.write(Joiner.on(";").join(new Object[]{model, log, result.getRecall(), result.getPrecision()})+"\n");
                 //results.put(model, log, result);
             }
@@ -1400,14 +1404,14 @@ public class ExamplesTest {
 		Automaton a = getMotivModel();
 
 		EntropyPrecisionRecall result1 = 
-				getPrecisionAndRecall("motiv_model","motiv_log1", a, getL1Motiv());
+				getPrecisionAndRecall("motiv_model","motiv_log1", a, getL1Motiv(), false);
 		EntropyPrecisionRecall result2 = 
-				getPrecisionAndRecall("motiv_model","motiv_log2", a, getL2Motiv());
+				getPrecisionAndRecall("motiv_model","motiv_log2", a, getL2Motiv(), false);
 		
 		EntropyPrecisionRecall result3 = 
-				getPrecisionAndRecall("motiv_model_tau","motiv_log1_tau", addTau(a), addTau(getL1Motiv()));
+				getPrecisionAndRecall("motiv_model_tau","motiv_log1_tau", addTau(a), addTau(getL1Motiv()), true);
 		EntropyPrecisionRecall result4 = 
-				getPrecisionAndRecall("motiv_model_tau","motiv_log2_tau", addTau(a), addTau(getL2Motiv()));
+				getPrecisionAndRecall("motiv_model_tau","motiv_log2_tau", addTau(a), addTau(getL2Motiv()), true);
 					
 		dataWriter.write(new String(Joiner.on(";")
 				.join(new Object[] {
@@ -1437,30 +1441,30 @@ public class ExamplesTest {
 		Automaton a2 = getSimpleABCLoopAutomaton();
 
 		EntropyPrecisionRecall result1 = 
-				getPrecisionAndRecall("AB_model","AB_log", a1, getLABBA());
+				getPrecisionAndRecall("AB_model","AB_log", a1, getLABBA(), false);
 		EntropyPrecisionRecall result2 = 
-				getPrecisionAndRecall("AB_model","ABBAAC_log", a1, getLABBAACBAB());
+				getPrecisionAndRecall("AB_model","ABBAAC_log", a1, getLABBAACBAB(), false);
 		EntropyPrecisionRecall result3 = 
-				getPrecisionAndRecall("AB_model","BAA_log", a1, getLBADBAB());
+				getPrecisionAndRecall("AB_model","BAA_log", a1, getLBADBAB(), false);
 		EntropyPrecisionRecall result4 = 
-				getPrecisionAndRecall("ABLoop_model","AB_log", a2, getLABBA());
+				getPrecisionAndRecall("ABLoop_model","AB_log", a2, getLABBA(), false);
 		EntropyPrecisionRecall result5 = 
-				getPrecisionAndRecall("ABLoop_model","ABBAAC_log", a2, getLABBAACBAB());
+				getPrecisionAndRecall("ABLoop_model","ABBAAC_log", a2, getLABBAACBAB(), false);
 		EntropyPrecisionRecall result6 = 
-				getPrecisionAndRecall("ABLoop_model","BAA_log", a2, getLBADBAB());
+				getPrecisionAndRecall("ABLoop_model","BAA_log", a2, getLBADBAB(), false);
 		
 		EntropyPrecisionRecall result7 = 
-				getPrecisionAndRecall("AB_model_tau","AB_log_tau", addTau(a1), addTau(getLABBA()));
+				getPrecisionAndRecall("AB_model_tau","AB_log_tau", addTau(a1), addTau(getLABBA()), true);
 		EntropyPrecisionRecall result8 = 
-				getPrecisionAndRecall("AB_model_tau","ABBAAC_log_tau", addTau(a1), addTau(getLABBAACBAB()));
+				getPrecisionAndRecall("AB_model_tau","ABBAAC_log_tau", addTau(a1), addTau(getLABBAACBAB()), true);
 		EntropyPrecisionRecall result9 = 
-				getPrecisionAndRecall("AB_model_tau","BAA_log_tau", addTau(a1), addTau(getLBADBAB()));
+				getPrecisionAndRecall("AB_model_tau","BAA_log_tau", addTau(a1), addTau(getLBADBAB()), true);
 		EntropyPrecisionRecall result10 = 
-				getPrecisionAndRecall("ABLoop_model_tau","AB_log_tau", addTau(a2), addTau(getLABBA()));
+				getPrecisionAndRecall("ABLoop_model_tau","AB_log_tau", addTau(a2), addTau(getLABBA()), true);
 		EntropyPrecisionRecall result11 = 
-				getPrecisionAndRecall("ABLoop_model_tau","ABBAAC_log_tau", addTau(a2), addTau(getLABBAACBAB()));
+				getPrecisionAndRecall("ABLoop_model_tau","ABBAAC_log_tau", addTau(a2), addTau(getLABBAACBAB()), true);
 		EntropyPrecisionRecall result12 = 
-				getPrecisionAndRecall("ABLoop_model_tau","BAA_log_tau", addTau(a2), addTau(getLBADBAB()));
+				getPrecisionAndRecall("ABLoop_model_tau","BAA_log_tau", addTau(a2), addTau(getLBADBAB()), true);
 			
 		dataWriter.write(new String(Joiner.on(";")
 				.join(new Object[] {
@@ -1571,7 +1575,7 @@ public class ExamplesTest {
     }
 
 
-    private EntropyPrecisionRecall getPrecisionAndRecall(String mName, String lName, Automaton aM, Automaton aL) {
+    private EntropyPrecisionRecall getPrecisionAndRecall(String mName, String lName, Automaton aM, Automaton aL, boolean tauLog) {
         TestUtils.outputPNG(aM, mName);
 
         TestUtils.outputPNG(aL, lName);

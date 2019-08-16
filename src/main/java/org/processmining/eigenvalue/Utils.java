@@ -174,7 +174,6 @@ public class Utils {
 	public static void addTau(Automaton a) {
     	
     	Set<StatePair> pairs = new HashSet<StatePair>();
-        int cnt = 0;
     	for (dk.brics.automaton2.State s : a.getStates()) {
         	for (dk.brics.automaton2.Transition t : s.getTransitions()) {
         		pairs.add(new StatePair(s, t.getDest()));
