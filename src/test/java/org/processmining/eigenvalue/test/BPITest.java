@@ -1,20 +1,27 @@
+/**
+ *
+ *  Copyright 2019 by Anna Kalenkova <anna.kalenkova@unimelb.edu.au>
+ *  Copyright 2018 by Andreas Solti <solti@ai.wu.ac.at>
+ *
+ *  Licensed under GNU General Public License 3.0 or later. 
+ *  Some rights reserved. See COPYING, AUTHORS.
+ *
+ * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
+ */
+
 package org.processmining.eigenvalue.test;
 
 import org.deckfour.xes.info.XLogInfo;
 import org.deckfour.xes.info.XLogInfoFactory;
 import org.deckfour.xes.info.impl.XLogInfoImpl;
 import org.deckfour.xes.model.XLog;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetImpl;
 import org.processmining.eigenvalue.Utils;
 import org.processmining.eigenvalue.automata.PrecisionRecallComputer;
 import org.processmining.eigenvalue.data.EntropyPrecisionRecall;
-import org.processmining.eigenvalue.provider.LanguagePrecisionRecall;
-import org.processmining.eigenvalue.provider.PrecisionProvider;
 import org.processmining.eigenvalue.tree.TreeUtils;
-import org.processmining.plugins.InductiveMiner.mining.MiningParameters;
 import org.processmining.processtree.ProcessTree;
 import org.processmining.ptconversions.pn.ProcessTree2Petrinet;
 

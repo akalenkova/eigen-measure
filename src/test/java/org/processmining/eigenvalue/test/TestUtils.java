@@ -5,6 +5,17 @@ import org.deckfour.xes.classification.XEventClasses;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.in.XUniversalParser;
 import org.deckfour.xes.model.XLog;
+/**
+*
+*  Copyright 2019 by Anna Kalenkova <anna.kalenkova@unimelb.edu.au>
+*  Copyright 2018 by Andreas Solti <solti@ai.wu.ac.at>
+*
+*  Licensed under GNU General Public License 3.0 or later. 
+*  Some rights reserved. See COPYING, AUTHORS.
+*
+* @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
+*/
+
 import org.deckfour.xes.model.impl.XAttributeMapImpl;
 import org.deckfour.xes.model.impl.XLogImpl;
 import org.junit.Test;

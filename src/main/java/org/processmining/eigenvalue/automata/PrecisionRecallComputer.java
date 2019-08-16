@@ -1,3 +1,14 @@
+/**
+ *
+ *  Copyright 2019 by Anna Kalenkova <anna.kalenkova@unimelb.edu.au>
+ *  Copyright 2018 by Andreas Solti <solti@ai.wu.ac.at>
+ *
+ *  Licensed under GNU General Public License 3.0 or later. 
+ *  Some rights reserved. See COPYING, AUTHORS.
+ *
+ * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
+ */
+
 package org.processmining.eigenvalue.automata;
 
 import dk.brics.automaton2.Automaton;
@@ -11,6 +22,8 @@ import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.eigenvalue.Utils;
 import org.processmining.eigenvalue.data.EntropyPrecisionRecall;
 import org.processmining.eigenvalue.data.EntropyResult;
+
+
 import org.processmining.eigenvalue.test.TestUtils;
 import org.processmining.framework.packages.impl.CancelledException;
 import org.processmining.framework.plugin.PluginContext;

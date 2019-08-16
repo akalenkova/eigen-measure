@@ -1,3 +1,14 @@
+/**
+ *
+ *  Copyright 2019 by Anna Kalenkova <anna.kalenkova@unimelb.edu.au>
+ *  Copyright 2018 by Andreas Solti <solti@ai.wu.ac.at>
+ *
+ *  Licensed under GNU General Public License 3.0 or later. 
+ *  Some rights reserved. See COPYING, AUTHORS.
+ *
+ * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
+ */
+
 package be.kuleuven.econ.cbf.utils;
 
 import org.processmining.models.connections.GraphLayoutConnection;
