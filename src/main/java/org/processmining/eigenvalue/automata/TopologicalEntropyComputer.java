@@ -91,6 +91,10 @@ public class TopologicalEntropyComputer {
         return entM;
     }
 
+    public static EntropyResult getTopologicalEntropy(Automaton a, String name) {
+        return getTopologicalEntropy(a, name, null);
+    }
+    
     public static EntropyResult getTopologicalEntropy(Automaton a, String name, ProMCanceller canceller) {
         return getTopologicalEntropy(a, name, canceller, 1.0);
     }
@@ -323,7 +327,7 @@ public class TopologicalEntropyComputer {
             if (!isDeterministic(a)) {
                 logger.info("non-deterministic, determinizing ...");
                 a.setDeterministic(false);
-                a.determinize(canceller);
+                a.determinize(canceller.NEVER_CANCEL);
                 if (DEBUG_AUTOMATA_TO_DISK) {
                     IOUtils.toFile(name + "_det.dot", a.toDot());
                 }
@@ -334,7 +338,7 @@ public class TopologicalEntropyComputer {
             timeDeterminize = now - startTime;
 
             logger.info("minimizing ...");
-            a.minimize(canceller);
+            a.minimize(canceller.NEVER_CANCEL);
             timeMinimize = System.currentTimeMillis() - now;
 
 
