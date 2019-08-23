@@ -26,7 +26,7 @@ public class MetricsCalculator {
 	}
 	
 	/**
-	 * Calculates recall and precision for the given automaton and event log
+	 * Calculates recall and precision for the given automata
 	 * 
 	 * @param aM model
 	 * @param aL log
@@ -37,6 +37,54 @@ public class MetricsCalculator {
 	public static Pair<Double, Double> calculate(Automaton aM, String mName, Automaton aL, String lName, boolean bTau,
 			boolean bEfficient) {
 
+		if(bTau) {	
+//			if(bEfficient) {
+//				Set<String> relevantTraces = aM.getFiniteStrings();
+//				if(relevantTraces != null) {
+//					Automaton a = new Automaton();
+//					for(String trace : relevantTraces) {
+//						a.incorporateTrace(trace.get, ProMCanceller.NEVER_CANCEL);
+//					}
+//				}
+//			}
+			// ------------------Adding tau to relevant automaton-------------------
+			Utils.addTau(aM);
+			
+			// Determinization of automaton
+			System.out.println("Starting determinization of automaton " + mName);
+			long start = System.nanoTime();
+			aM.determinize(ProMCanceller.NEVER_CANCEL);
+			long time = System.nanoTime()-start;
+			System.out.println(String.format("The automaton %s determinized in %s nanoseconds.", mName, time));
+			
+			// Minimization of automaton
+			System.out.println("Starting minimization of automaton " + mName);
+			start = System.nanoTime();
+			aM.minimize(ProMCanceller.NEVER_CANCEL);
+			time = System.nanoTime()-start;
+			System.out.println(String.format("The automaton %s minimized"
+					+ " in %s nanoseconds.", mName, time));
+			
+			// ------------------Adding tau to retrieved automaton-------------------
+			Utils.addTau(aL);
+			
+			// Determinization of automaton
+			System.out.println("Starting determinization of automaton " + lName);
+			start = System.nanoTime();
+			aL.determinize(ProMCanceller.NEVER_CANCEL);
+			time = System.nanoTime()-start;
+			System.out.println(String.format("The automaton %s determinized in %s nanoseconds.", lName, time));
+			
+			// Minimization of automaton
+			System.out.println("Starting minimization of automaton " + lName);
+			start = System.nanoTime();
+			aL.minimize(ProMCanceller.NEVER_CANCEL);
+			time = System.nanoTime()-start;
+			System.out.println(String.format("The automaton %s minimized"
+					+ " in %s nanoseconds.", lName, time));
+			
+		}
+		
 		EntropyResult resultM = TopologicalEntropyComputer.getTopologicalEntropy(aM, mName);
 		EntropyResult resultL = TopologicalEntropyComputer.getTopologicalEntropy(aL, lName);
 		Automaton aLM = aM.intersection(aL, ProMCanceller.NEVER_CANCEL);
