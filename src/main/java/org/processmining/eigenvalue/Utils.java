@@ -193,4 +193,24 @@ public class Utils {
         }
         a.addEpsilons(pairs, ProMCanceller.NEVER_CANCEL);
     }
+	
+	/**
+	 * Constructing short array from byte array
+	 * 
+	 * @param byteArray
+	 * @return
+	 */
+	public static short[] toShortArray(byte[] byteArray) {
+		
+		int size = byteArray.length;
+		short[] shortArray = new short[size];
+
+		for (int index = 0; index < size; index++) {
+		    shortArray[index] = (short) byteArray[index];
+		}
+		
+		return shortArray;
+	}
+		
+	
 }
