@@ -45,7 +45,8 @@ public class MetricsCalculator {
 			// ------------------Efficient computation-------------------
 			if(bEfficient) {
 				// ------------------Relevant automaton--------------------------------
-				long start = System.nanoTime();
+    			System.out.println(String.format("Efficiently constructing deterministic minimal automaton for relevant traces with tau."));
+				long start = System.currentTimeMillis();
 				Set<String> relevantTraces = aM.getFiniteStrings();
 				if(relevantTraces != null) {
 					Automaton a = new Automaton();
@@ -56,16 +57,19 @@ public class MetricsCalculator {
 						a.minimize(ProMCanceller.NEVER_CANCEL);
 					}
 					aM = a.clone();
-				long time = System.nanoTime()-start;
-				System.out.println(String.format("The automaton %s constracted (including deternminization and minimization)"
-						+ " in %s nanoseconds.", mName, time));
+				long time = System.currentTimeMillis()-start;
+				System.out.println(String.format("Efficient construction of relevant automaton with tau took   %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s", aM.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s", aM.getNumberOfTransitions()));
 				} else {
+					System.out.println(String.format("Relevant automaton accepts infinite number of traces. Efficient algorithm cannot be applied."));
 					infiniteM = true;
 				}
 				
 				// ------------------Retrieved automaton--------------------------------
-				start = System.nanoTime();
-				Set<String> retrievedTraces = aM.getFiniteStrings();
+    			System.out.println(String.format("Efficiently constructing deterministic minimal automaton for retrieved traces with tau"));
+				start = System.currentTimeMillis();
+				Set<String> retrievedTraces = aL.getFiniteStrings();
 				if(retrievedTraces != null) {
 					Automaton a = new Automaton();
 					for(String trace : retrievedTraces) {
@@ -76,56 +80,69 @@ public class MetricsCalculator {
 					}
 					aL = a.clone();
 				long time = System.nanoTime()-start;
-				System.out.println(String.format("The automaton %s constracted (including deternminization and minimization)"
-						+ " in %s nanoseconds.", lName, time));
+				time = System.currentTimeMillis()-start;
+				System.out.println(String.format("Efficient construction of retrieved automaton with tau took  %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s", aL.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s", aL.getNumberOfTransitions()));
 				} else {
+					System.out.println(String.format("Retrived automaton accepts infinite number of traces. Efficient algorithm cannot be applied."));
 					infiniteL = true;
 				}
 			} 
 			if (!bEfficient || infiniteM) {
 				// ------------------Adding tau to relevant automaton-------------------
 				Utils.addTau(aM);
-					
-					// Determinization of automaton
-					System.out.println("Starting determinization of automaton " + mName);
-					long start = System.nanoTime();
-					aM.determinize(ProMCanceller.NEVER_CANCEL);
-					long time = System.nanoTime()-start;
-					System.out.println(String.format("The automaton %s determinized in %s nanoseconds.", mName, time));
-					
-					// Minimization of automaton
-					System.out.println("Starting minimization of automaton " + mName);
-					start = System.nanoTime();
-					aM.minimize(ProMCanceller.NEVER_CANCEL);
-					time = System.nanoTime()-start;
-					System.out.println(String.format("The automaton %s minimized"
-							+ " in %s nanoseconds.", mName, time));
+
+				// Determinization of automaton
+				System.out.println("Starting determinization of relevant automaton with tau");
+				long start = System.currentTimeMillis();
+				aM.determinize(ProMCanceller.NEVER_CANCEL);
+				long time = System.currentTimeMillis() - start;
+				System.out.println(
+						String.format("The relevant automaton with tau is determinized in           %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s", aM.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s", aM.getNumberOfTransitions()));
+				
+				// Minimization of automaton
+				System.out.println("Starting minimization of relevant automaton with tau");
+				start = System.currentTimeMillis();
+				aM.minimize(ProMCanceller.NEVER_CANCEL);
+				time = System.currentTimeMillis() - start;
+				System.out.println(
+						String.format("The relevant automaton with tau is minimized in              %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s", aM.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s", aM.getNumberOfTransitions()));
 			}
 			if (!bEfficient || infiniteL) {
 				// ------------------Adding tau to retrieved automaton-------------------
 				Utils.addTau(aL);
-				
+
 				// Determinization of automaton
-				System.out.println("Starting determinization of automaton " + lName);
-				long start = System.nanoTime();
+				System.out.println("Starting determinization of retrieved automaton with tau");
+				long start = System.currentTimeMillis();
 				aL.determinize(ProMCanceller.NEVER_CANCEL);
-				long time = System.nanoTime()-start;
-				System.out.println(String.format("The automaton %s determinized in %s nanoseconds.", lName, time));
-				
+				long time = System.currentTimeMillis() - start;
+				System.out.println(
+						String.format("The retrieved automaton with tau is determinized in          %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s", aL.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s", aL.getNumberOfTransitions()));
+
 				// Minimization of automaton
-				System.out.println("Starting minimization of automaton " + lName);
-				start = System.nanoTime();
+				System.out.println("Starting minimization of retrieved automaton with tau");
+				start = System.currentTimeMillis();
 				aL.minimize(ProMCanceller.NEVER_CANCEL);
-				time = System.nanoTime()-start;
-				System.out.println(String.format("The automaton %s minimized"
-						+ " in %s nanoseconds.", lName, time));
+				time = System.currentTimeMillis() - start;
+				System.out.println(
+						String.format("The retrieved automaton with tau is minimized in             %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s", aL.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s", aL.getNumberOfTransitions()));
 			}
 		}
-		
+
 		EntropyResult resultM = TopologicalEntropyComputer.getTopologicalEntropy(aM, mName);
 		EntropyResult resultL = TopologicalEntropyComputer.getTopologicalEntropy(aL, lName);
 		Automaton aLM = aM.intersection(aL, ProMCanceller.NEVER_CANCEL);
-		EntropyResult resultLM = TopologicalEntropyComputer.getTopologicalEntropy(aLM, lName);
+		EntropyResult resultLM = TopologicalEntropyComputer.getTopologicalEntropy(aLM, "intersection of " + mName + " and " + lName);
 		
 		double recall = resultLM.largestEigenvalue / resultL.largestEigenvalue;
 		double precision = resultLM.largestEigenvalue / resultM.largestEigenvalue;

@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 
 public class TopologicalEntropyComputer {
 
-    private static final Logger logger = Logger.getLogger(TopologicalEntropyComputer.class.getName());
+   // private static final Logger logger = Logger.getLogger(TopologicalEntropyComputer.class.getName());
     private static final double EPSILON = 0.000000000001;
 
     /**
@@ -110,7 +110,7 @@ public class TopologicalEntropyComputer {
         if (a == null || a.getStates().size() == 0) {
             return new EntropyResult(name, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true);
         }
-        AutomatonMinimization minimize = new AutomatonMinimization(a, name, canceller).minimize();
+        //AutomatonMinimization minimize = new AutomatonMinimization(a, name, canceller).minimize();
         long timeNow = System.currentTimeMillis();
         double largestEigenvalue = -1;
         long timeMatrixConversion;
@@ -118,22 +118,23 @@ public class TopologicalEntropyComputer {
         if (a.getStates().size() < 5) {
             SparseRealMatrix matrix = getSparseApacheMathMatrix(a, shortCircuitFactor);
             timeMatrixConversion = System.currentTimeMillis() - timeNow;
-            timeNow = System.currentTimeMillis();
+            //timeNow = System.currentTimeMillis();
             EigenDecomposition decomp = new EigenDecomposition(matrix);
             largestEigenvalue = getMax(decomp.getRealEigenvalues());
         } else {
             MatrixAndDegreeStats matrixAndStats = getCompressedSparseMatrix(a, shortCircuitFactor);
+            // Check the formula for lower bound
             double lowerBound = Math.max(matrixAndStats.avgDegree, Math.sqrt(matrixAndStats.getMaxDegree()));
             double upperBound = matrixAndStats.getMaxDegree();
 
             timeMatrixConversion = System.currentTimeMillis() - timeNow;
-            timeNow = System.currentTimeMillis();
+            //timeNow = System.currentTimeMillis();
 
             if (lowerBound >= upperBound - EPSILON) {
                 // no need to compute eigenvalues!
                 largestEigenvalue = lowerBound;
             } else {
-                logger.info("possible range from " + lowerBound + " to " + upperBound + " (tolerance: " + (upperBound - lowerBound) + ")");
+                //logger.info("possible range from " + lowerBound + " to " + upperBound + " (tolerance: " + (upperBound - lowerBound) + ")");
                 try {
                     ArpackGen generalArpack = new ArpackGen(matrixAndStats.getMatrix());
                     Map<Double, DenseVectorSub> result = generalArpack.solve(Math.min(matrixAndStats.getMatrix().numColumns() / 2, 10), ArpackGen.Ritz.LR);
@@ -143,14 +144,17 @@ public class TopologicalEntropyComputer {
                         largestEigenvalue = -1;
                         converged = false;
                     }
-                    logger.info(lowerBound + " <= " + largestEigenvalue + " <= " + upperBound);
+                   // logger.info(lowerBound + " <= " + largestEigenvalue + " <= " + upperBound);
                 } catch (IllegalStateException e) {
-                    logger.warning("Debug this!");
+                	 System.out.println("Debug this!");
                 }
             }
         }
-        return new EntropyResult(minimize.automatonSizeOrig, minimize.automatonSizeDeterministic, minimize.automatonSizeMinimal,
-                minimize.timeDeterminize, minimize.timeMinimize, largestEigenvalue, FastMath.log(2, largestEigenvalue), System.currentTimeMillis() - timeNow, timeMatrixConversion, converged);
+        System.out.println("The largest eigen value for automaton " + name +": "+ + largestEigenvalue);
+        System.out.println(String.format("The largest eigen value was calculated in %s ms.", System.currentTimeMillis() - timeNow));
+        System.out.println();
+        return new EntropyResult(a.getStates().size(), a.getStates().size(), a.getStates().size(),
+                0, 0, largestEigenvalue, FastMath.log(2, largestEigenvalue), System.currentTimeMillis() - timeNow, timeMatrixConversion, converged);
     }
 
     /**
@@ -312,44 +316,44 @@ public class TopologicalEntropyComputer {
             return automatonSizeMinimal;
         }
 
-        public AutomatonMinimization minimize() {
-            long startTime = System.currentTimeMillis();
-            logger.info("-------------------");
-            logger.info(name);
-            logger.info("-------------------");
-            automatonSizeOrig = a.getStates().size();
-            automatonSizeDeterministic = automatonSizeOrig;
-            logger.info("Number of states: " + automatonSizeOrig);
-            if (DEBUG_AUTOMATA_TO_DISK) {
-                IOUtils.toFile(name + ".dot", a.toDot());
-            }
-
-            if (!isDeterministic(a)) {
-                logger.info("non-deterministic, determinizing ...");
-                a.setDeterministic(false);
-                a.determinize(canceller.NEVER_CANCEL);
-                if (DEBUG_AUTOMATA_TO_DISK) {
-                    IOUtils.toFile(name + "_det.dot", a.toDot());
-                }
-                automatonSizeDeterministic = a.getStates().size();
-                logger.info("Number of states: " + automatonSizeDeterministic);
-            }
-            long now = System.currentTimeMillis();
-            timeDeterminize = now - startTime;
-
-            logger.info("minimizing ...");
-            a.minimize(canceller.NEVER_CANCEL);
-            timeMinimize = System.currentTimeMillis() - now;
-
-
-            automatonSizeMinimal = a.getStates().size();
-            logger.info("Number of states: " + automatonSizeMinimal);
-
-            if (DEBUG_AUTOMATA_TO_DISK) {
-                IOUtils.toFile(name + "_min.dot", a.toDot());
-            }
-            return this;
-        }
+//        public AutomatonMinimization minimize() {
+//            long startTime = System.currentTimeMillis();
+//            logger.info("-------------------");
+//            logger.info(name);
+//            logger.info("-------------------");
+//            automatonSizeOrig = a.getStates().size();
+//            automatonSizeDeterministic = automatonSizeOrig;
+//            logger.info("Number of states: " + automatonSizeOrig);
+//            if (DEBUG_AUTOMATA_TO_DISK) {
+//                IOUtils.toFile(name + ".dot", a.toDot());
+//            }
+//
+//            if (!isDeterministic(a)) {
+//                logger.info("non-deterministic, determinizing ...");
+//                a.setDeterministic(false);
+//                a.determinize(canceller.NEVER_CANCEL);
+//                if (DEBUG_AUTOMATA_TO_DISK) {
+//                    IOUtils.toFile(name + "_det.dot", a.toDot());
+//                }
+//                automatonSizeDeterministic = a.getStates().size();
+//                logger.info("Number of states: " + automatonSizeDeterministic);
+//            }
+//            long now = System.currentTimeMillis();
+//            timeDeterminize = now - startTime;
+//
+//            logger.info("minimizing ...");
+//            a.minimize(canceller.NEVER_CANCEL);
+//            timeMinimize = System.currentTimeMillis() - now;
+//
+//
+//            automatonSizeMinimal = a.getStates().size();
+//            logger.info("Number of states: " + automatonSizeMinimal);
+//
+//            if (DEBUG_AUTOMATA_TO_DISK) {
+//                IOUtils.toFile(name + "_min.dot", a.toDot());
+//            }
+//            return this;
+//        }
     }
 
     private static SparseRealMatrix getSparseApacheMathMatrix(Automaton a){
