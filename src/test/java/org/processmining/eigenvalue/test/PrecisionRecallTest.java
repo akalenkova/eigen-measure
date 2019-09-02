@@ -70,10 +70,10 @@ public class PrecisionRecallTest {
         String lpsolvePathWin = new File(dir,"lib/lib/win64/").getAbsolutePath();
         String lpsolvePathMac = new File(dir,"lib/lib/mac/").getAbsolutePath();
 
-        addLibraryPath("/usr/lib/lp_solve");
-        addLibraryPath(lpsolvePath);
-        addLibraryPath(lpsolvePathWin);
-        addLibraryPath(lpsolvePathMac);
+  //      addLibraryPath("/usr/lib/lp_solve");
+  //      addLibraryPath(lpsolvePath);
+  //      addLibraryPath(lpsolvePathWin);
+  //      addLibraryPath(lpsolvePathMac);
         try {
             System.loadLibrary("lpsolve55");
         } catch (Exception e){
