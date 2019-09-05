@@ -150,8 +150,9 @@ public class TopologicalEntropyComputer {
                 }
             }
         }
-        System.out.println("The largest eigen value for automaton " + name +": "+ + largestEigenvalue);
-        System.out.println(String.format("The largest eigen value was calculated in %s ms.", System.currentTimeMillis() - timeNow));
+        System.out.println("Automaton " + name + ":");
+        System.out.println("A largest eigenvalue: " + largestEigenvalue);
+        System.out.println(String.format("Calculated in %s ms.", System.currentTimeMillis() - timeNow));
         System.out.println();
         return new EntropyResult(a.getStates().size(), a.getStates().size(), a.getStates().size(),
                 0, 0, largestEigenvalue, FastMath.log(2, largestEigenvalue), System.currentTimeMillis() - timeNow, timeMatrixConversion, converged);
@@ -409,4 +410,6 @@ public class TopologicalEntropyComputer {
         }
         return stateIds.get(state);
     }
+    
+   
 }
