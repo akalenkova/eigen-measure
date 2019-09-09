@@ -115,13 +115,22 @@ public class MetricsCalculator {
 		
 			if (!bEfficient || infiniteL) {
 				// ------------------Adding tau to retrieved automaton-------------------
+				System.out.println("Starting preliminary minimization of retrieved automaton with tau");
+				long start = System.currentTimeMillis();
+				aL.minimize(ProMCanceller.NEVER_CANCEL);
+				long time = System.currentTimeMillis() - start;
+				System.out.println(
+						String.format("The retrieved automaton with tau is minimized in             %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s", aL.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s", numberOfTransitions(aL)));
+				
 				Utils.addTau(aL);
 				
 				// Determinization of automaton
 				System.out.println("Starting determinization of retrieved automaton with tau");
-				long start = System.currentTimeMillis();
+				start = System.currentTimeMillis();
 				aL.determinize(ProMCanceller.NEVER_CANCEL);
-				long time = System.currentTimeMillis() - start;
+				time = System.currentTimeMillis() - start;
 				System.out.println(
 						String.format("The retrieved automaton with tau is determinized in          %s ms.", time));
 				System.out.println(String.format("The number of states:                                        %s", aL.getNumberOfStates()));
@@ -140,13 +149,23 @@ public class MetricsCalculator {
 			
 			if (!bEfficient || infiniteM) {
 				// ------------------Adding tau to relevant automaton-------------------
-				Utils.addTau(aM);
+				// Minimization of automaton
+				System.out.println("Starting preliminary minimization of relevant automaton with tau");
+				long start = System.currentTimeMillis();
+				aM.minimize(ProMCanceller.NEVER_CANCEL);
+				long time = System.currentTimeMillis() - start;
+				System.out.println(
+						String.format("The relevant automaton with tau is minimized in              %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s", aM.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s", numberOfTransitions(aM)));
 
+				Utils.addTau(aM);
+				
 				// Determinization of automaton
 				System.out.println("Starting determinization of relevant automaton with tau");
-				long start = System.currentTimeMillis();
+				start = System.currentTimeMillis();
 				aM.determinize(ProMCanceller.NEVER_CANCEL);
-				long time = System.currentTimeMillis() - start;
+				time = System.currentTimeMillis() - start;
 				System.out.println(
 						String.format("The relevant automaton with tau is determinized in           %s ms.", time));
 				System.out.println(String.format("The number of states:                                        %s", aM.getNumberOfStates()));
@@ -178,6 +197,103 @@ public class MetricsCalculator {
 		double precision = resultLM.largestEigenvalue / resultM.largestEigenvalue;
 		
 		return new Pair<Double, Double>(recall, precision);
+	}
+	
+	/**
+	 * Calculates entropy of the given automaton
+	 * 
+	 * @param model      automaton
+	 * @param name       name of the automaton
+	 * @param bTau       flag indicating whether tau steps are to be added
+	 * @param bEfficient flag indicating whether the values are to be computed
+	 *                   efficiently
+	 * @return returns entropy (double)
+	 */
+	public static double calculateEntropy(Automaton model, String name, boolean bTau, boolean bEfficient) {
+
+		if (bTau) {
+			boolean infinite = false; // the behavior contains infinite number of traces
+			// ------------------Efficient computation-------------------
+			if (bEfficient) {
+
+				System.out.println(
+						String.format("Efficiently constructing deterministic minimal automaton for traces with tau"));
+				long start = System.currentTimeMillis();
+				Set<String> traces = model.getFiniteStrings();
+
+				if (traces != null) {
+					Automaton a = new Automaton();
+					int cnt = 0;
+					System.out.println("Size " + traces.size());
+					for (String trace : traces) {
+						System.out.println(cnt);
+						cnt++;
+						Automaton aTmp = Automaton.makeString(trace);
+						Utils.addTau(aTmp);
+						aTmp.determinize(ProMCanceller.NEVER_CANCEL);
+						aTmp.minimize(ProMCanceller.NEVER_CANCEL);
+						a = a.union(aTmp, ProMCanceller.NEVER_CANCEL);
+						a.determinize(ProMCanceller.NEVER_CANCEL);
+						a.minimize(ProMCanceller.NEVER_CANCEL);
+					}
+					model = a.clone();
+					long time = System.currentTimeMillis() - start;
+					System.out.println(
+							String.format("Efficient construction of automaton with tau took            %s ms.", time));
+					System.out.println(String.format("The number of states:                                        %s",
+							model.getNumberOfStates()));
+					System.out.println(String.format("The number of transitions:                                   %s",
+							numberOfTransitions(model)));
+				} else {
+					System.out.println(String.format(
+							"Automaton accepts infinite number of traces. Efficient algorithm cannot be applied."));
+					infinite = true;
+				}
+
+			}
+			if (!bEfficient || infinite) {
+				// ------------------Adding tau to automaton-------------------
+				System.out.println("Starting preliminary minimization of automaton with tau");
+				long start = System.currentTimeMillis();
+				model.minimize(ProMCanceller.NEVER_CANCEL);
+				long time = System.currentTimeMillis() - start;
+				System.out.println(
+						String.format("The automaton with tau is minimized in                      %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s",
+						model.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s",
+						numberOfTransitions(model)));
+
+				Utils.addTau(model);
+
+				// Determinization of automaton
+				System.out.println("Starting determinization of automaton with tau");
+				start = System.currentTimeMillis();
+				model.determinize(ProMCanceller.NEVER_CANCEL);
+				time = System.currentTimeMillis() - start;
+				System.out.println(
+						String.format("The automaton with tau is determinized in                   %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s",
+						model.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s",
+						numberOfTransitions(model)));
+
+				// Minimization of automaton
+				System.out.println("Starting minimization of retrieved automaton with tau");
+				start = System.currentTimeMillis();
+				model.minimize(ProMCanceller.NEVER_CANCEL);
+				time = System.currentTimeMillis() - start;
+				System.out.println(
+						String.format("The retrieved automaton with tau is minimized in             %s ms.", time));
+				System.out.println(String.format("The number of states:                                        %s",
+						model.getNumberOfStates()));
+				System.out.println(String.format("The number of transitions:                                   %s",
+						numberOfTransitions(model)));
+			}
+
+		}
+		EntropyResult result = TopologicalEntropyComputer.getTopologicalEntropy(model, name);
+		return result.largestEigenvalue;
 	}
 	
 	 private static  String numberOfTransitions(Automaton a) {
