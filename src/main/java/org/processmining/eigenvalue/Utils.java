@@ -28,8 +28,10 @@ import org.processmining.processtree.ProcessTree;
 import org.processmining.processtree.visualization.tree.TreeLayoutBuilder;
 import org.progressmining.xeslite.plugin.OpenLogFileLiteImplPlugin;
 
-import dk.brics.automaton2.Automaton;
-import dk.brics.automaton2.StatePair;
+import dk.brics.automaton.Automaton;
+import dk.brics.automaton.State;
+import dk.brics.automaton.StatePair;
+import dk.brics.automaton.Transition;
 
 import java.awt.*;
 import java.io.File;
@@ -121,6 +123,20 @@ public class Utils {
 		return 1 - (numEventsDifferent / (double)allEvents);
 	}
 	
+	
+	public static String numberOfTransitions(Automaton a) {
+	    	int c = 0;
+	    	for (State s : a.getStates()) {
+	    		for (Transition t : s.getTransitions()) {
+	    			char max = t.getMax();
+	    			char min = t.getMin();
+	    			int numberOfChars = max - min + 1;
+	    			c += numberOfChars;
+	    		}
+	    	}
+			return Integer.toString(c);
+	}	    
+	
 	private static String getTraceString(XTrace trInput, Map<String, String> eventEncoding) {
 		StringBuffer buf = new StringBuffer();
 		for (XEvent e : trInput){
@@ -185,13 +201,13 @@ public class Utils {
 	public static void addTau(Automaton a) {
     	
     	Set<StatePair> pairs = new HashSet<StatePair>();
-    	for (dk.brics.automaton2.State s : a.getStates()) {
-        	for (dk.brics.automaton2.Transition t : s.getTransitions()) {
+    	for (dk.brics.automaton.State s : a.getStates()) {
+        	for (dk.brics.automaton.Transition t : s.getTransitions()) {
         		pairs.add(new StatePair(s, t.getDest()));
         	}
         	
         }
-        a.addEpsilons(pairs, ProMCanceller.NEVER_CANCEL);
+        a.addEpsilons(pairs);
     }
 	
 	/**
@@ -211,6 +227,57 @@ public class Utils {
 		
 		return shortArray;
 	}
-		
 	
+	public static Automaton union (Automaton a1, Automaton a2) {
+		
+		State initState1 = a1.getInitialState();
+		State initState2 = a2.getInitialState();
+		
+		State s = new State();
+	
+		
+		StatePair pair1 = new StatePair(s, initState1);
+		StatePair pair2 = new StatePair(s, initState2);
+		Set<StatePair> setEpsilons = new HashSet<StatePair>();
+		setEpsilons.add(pair1);
+		setEpsilons.add(pair2);
+		
+		a2.setInitialState(s);
+		a2.addEpsilons(setEpsilons);
+		
+		return a2;
+	}
+	
+//	public static Automaton expandTree(Automaton a) {
+//		for(State s: a.getStates()) {
+//			Set<Transition> inTransitions = getInEdges(s, a);
+//			if(inTransitions.size() > 1) {
+//				for(Transition t : inTransitions) {
+//					State sNew = new State();
+//					
+//					
+//				}
+//			}
+//		}
+//	}
+//	
+//	public static Set<State> getOutStates(State s) {
+//		Set<State> outStates = new HashSet<State>();
+//		for()
+//		
+//	}
+	
+	public static Set<Transition> getInEdges(State s, Automaton a) {
+		Set<Transition> result = new HashSet<Transition>();
+		
+		for(State sNew : a.getStates()) {
+			for(Transition t : sNew.getTransitions()) {
+				if(t.getDest().equals(s)) {
+					result.add(t);
+				}
+			}
+		}
+		
+		return result;
+	}
 }

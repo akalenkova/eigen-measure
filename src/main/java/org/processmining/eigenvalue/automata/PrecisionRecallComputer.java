@@ -11,8 +11,8 @@
 
 package org.processmining.eigenvalue.automata;
 
-import dk.brics.automaton2.Automaton;
-import dk.brics.automaton2.RunAutomaton;
+import dk.brics.automaton.Automaton;
+import dk.brics.automaton.RunAutomaton;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.deckfour.xes.classification.XEventClassifier;
@@ -23,17 +23,14 @@ import org.processmining.eigenvalue.Utils;
 import org.processmining.eigenvalue.data.EntropyPrecisionRecall;
 import org.processmining.eigenvalue.data.EntropyResult;
 
-
-import org.processmining.eigenvalue.test.TestUtils;
 import org.processmining.framework.packages.impl.CancelledException;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.plugins.InductiveMiner.Pair;
-import org.processmining.projectedrecallandprecision.helperclasses.AcceptingPetriNet2automaton;
-import org.processmining.projectedrecallandprecision.helperclasses.AutomatonFailedException;
 import org.processmining.projectedrecallandprecision.helperclasses.EfficientLog;
 import org.processmining.projectedrecallandprecision.helperclasses.ProjectPetriNetOntoActivities;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -118,13 +115,13 @@ public class PrecisionRecallComputer {
             aM = AcceptingPetriNet2automaton.convert(net, Integer.MAX_VALUE, canceller);
             if(tauModel) {
             	Utils.addTau(aM);
-                aM.determinize(ProMCanceller.NEVER_CANCEL);
-                aM.minimize(ProMCanceller.NEVER_CANCEL);
+                aM.determinize();
+                aM.minimize();
             }
         } catch (AutomatonFailedException e){
             e.printStackTrace();
         }
-        Automaton aLM = aM.intersection(aL, Utils.NOT_CANCELLER);
+        Automaton aLM = aM.intersection(aL);
         
         return getPrecisionAndRecall(aM, net.getNet().getLabel(), aL, "Log", aLM, 1.0, Utils.NOT_CANCELLER);
     }
@@ -183,8 +180,8 @@ public class PrecisionRecallComputer {
         	aM = AcceptingPetriNet2automaton.convert(projectedNet, Integer.MAX_VALUE, canceller);
             if(tauModel) {
             	Utils.addTau(aM);
-            	aM.determinize(ProMCanceller.NEVER_CANCEL);
-            	aM.minimize(ProMCanceller.NEVER_CANCEL);
+            	aM.determinize();
+            	aM.minimize();
             }
         } catch (AutomatonFailedException e){
             e.printStackTrace();
@@ -204,7 +201,7 @@ public class PrecisionRecallComputer {
             log(context, "Computed model automaton topology.", 60);
             checkCancelled(canceller);
 
-            RunAutomaton ra = new RunAutomaton(aM, canceller);
+            RunAutomaton ra = new RunAutomaton(aM);
             double fittingTracesFraction;
             EntropyResult resultLM;
             
@@ -216,8 +213,8 @@ public class PrecisionRecallComputer {
                 checkCancelled(canceller);
 
                 Automaton aL = pair.getB(); // log automaton of accepted traces
-                Automaton aML = aL.intersection(aM, canceller);
-                aML.minimize(canceller);
+                Automaton aML = aL.intersection(aM);
+                aML.minimize();
                 resultLM = getResult(logName, elog.size(), TopologicalEntropyComputer.getTopologicalEntropy(aML, logName, canceller));
 
                 log(context, "Computed log-model automaton topology.", 75);
@@ -311,14 +308,14 @@ public class PrecisionRecallComputer {
                 ++replayableTraces;
             }
         }
-        if (logAutomaton != null) {
-        	if(tauLog) {	
-        		TestUtils.outputPNG(logAutomaton, "logTauAutomaton");
-        	} else {
-        		 logAutomaton.minimize(canceller);
-                 TestUtils.outputPNG(logAutomaton, "logutomaton");
-        	}
-        }
+//        if (logAutomaton != null) {
+//        	if(tauLog) {	
+//        		TestUtils.outputPNG(logAutomaton, "logTauAutomaton");
+//        	} else {
+//        		 logAutomaton.minimize();
+//                 TestUtils.outputPNG(logAutomaton, "logutomaton");
+//        	}
+//        }
 
         System.out.println("Log automaton constructed");
         
@@ -349,7 +346,7 @@ public class PrecisionRecallComputer {
 			boolean tauLog, Set<String> addedTraces, ProMCanceller canceller) {
 		short[] projectedTrace = log.getProjectedTrace(trace, projectionKey);
 
-		boolean addToAutomaton = !onlyFittingTraces || modelAutomaton.run(projectedTrace);
+		boolean addToAutomaton = !onlyFittingTraces || modelAutomaton.run(Arrays.toString(projectedTrace));
 		if (addToAutomaton) {
 			if (logAutomaton == null) {
 				String automatonString;
@@ -358,27 +355,27 @@ public class PrecisionRecallComputer {
 				logAutomaton.expandSingleton();
 				if (tauLog) {
 					Utils.addTau(logAutomaton);
-					logAutomaton.determinize(canceller);
-					logAutomaton.minimize(canceller);
+					logAutomaton.determinize();
+					logAutomaton.minimize();
 				}
 			} else {
+				String automatonString = projectedTraceToString(projectedTrace);
 				if (tauLog) {
-					String automatonString = projectedTraceToString(projectedTrace);
 					if (!addedTraces.contains(automatonString)) {
 						Automaton curAutomaton = Automaton.makeString(automatonString);
 						curAutomaton.expandSingleton();
 						Utils.addTau(curAutomaton);
-						curAutomaton.determinize(canceller);
-						curAutomaton.minimize(canceller);
+						curAutomaton.determinize();
+						curAutomaton.minimize();
 
-						logAutomaton = logAutomaton.union(curAutomaton, canceller);
-						logAutomaton.determinize(canceller);
-						logAutomaton.minimize(canceller);
+						logAutomaton = logAutomaton.union(curAutomaton);
+						logAutomaton.determinize();
+						logAutomaton.minimize();
 
 						addedTraces.add(automatonString);
 					}
 				} else {
-					logAutomaton.incorporateTrace(projectedTrace, canceller);
+					logAutomaton.union(Automaton.makeString(automatonString));
 				}
 			}
 		}
@@ -403,15 +400,14 @@ public class PrecisionRecallComputer {
 			EfficientLog log, int trace, short[] projectionKey, boolean onlyFittingTraces, ProMCanceller canceller) {
 		short[] projectedTrace = log.getProjectedTrace(trace, projectionKey);
 
-		boolean addToAutomaton = !onlyFittingTraces || modelAutomaton.run(projectedTrace);
+		boolean addToAutomaton = !onlyFittingTraces || modelAutomaton.run(Arrays.toString(projectedTrace));
 		if (addToAutomaton) {
+			String automatonString = projectedTraceToString(projectedTrace);
 			if (logAutomaton == null) {
-				String automatonString = projectedTraceToString(projectedTrace);
 				logAutomaton = Automaton.makeString(automatonString);
 				logAutomaton.expandSingleton();
 			} else {
-
-				logAutomaton.incorporateTrace(projectedTrace, canceller);
+				logAutomaton.union(Automaton.makeString(automatonString));
 			}
 			if (canceller.isCancelled()) {
 				return null;

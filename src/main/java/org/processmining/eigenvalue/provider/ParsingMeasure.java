@@ -1,16 +1,18 @@
 package org.processmining.eigenvalue.provider;
 
-import dk.brics.automaton2.Automaton;
+import dk.brics.automaton.Automaton;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
 import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.eigenvalue.Utils;
+import org.processmining.eigenvalue.automata.AcceptingPetriNet2automaton;
+import org.processmining.eigenvalue.automata.AutomatonFailedException;
+import org.processmining.eigenvalue.automata.EfficientLog;
+import org.processmining.eigenvalue.automata.ProjectPetriNetOntoActivities;
 import org.processmining.models.graphbased.directed.petrinet.elements.Transition;
-import org.processmining.projectedrecallandprecision.helperclasses.AcceptingPetriNet2automaton;
-import org.processmining.projectedrecallandprecision.helperclasses.AutomatonFailedException;
-import org.processmining.projectedrecallandprecision.helperclasses.EfficientLog;
-import org.processmining.projectedrecallandprecision.helperclasses.ProjectPetriNetOntoActivities;
+
+import cern.colt.Arrays;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -53,7 +55,7 @@ public class ParsingMeasure implements RecallProvider {
             Automaton automaton = AcceptingPetriNet2automaton.convert(projectedNet, 500000, Utils.NOT_CANCELLER);
             for (int i = 0; i < efficientLog.size(); i++){
                 short[] trace = efficientLog.getProjectedTrace(i, actKeys);
-                if (automaton.run(trace)){
+                if (automaton.run(Arrays.toString(trace))){
                     parsedTraces += 1;
                 } else {
                     notParsedTraces += 1;

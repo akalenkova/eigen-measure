@@ -1,8 +1,8 @@
 package org.processmining.eigenvalue.automata;
 
-import dk.brics.automaton2.Automaton;
-import dk.brics.automaton2.State;
-import dk.brics.automaton2.Transition;
+import dk.brics.automaton.Automaton;
+import dk.brics.automaton.State;
+import dk.brics.automaton.Transition;
 import gnu.trove.map.TIntDoubleMap;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntDoubleHashMap;
@@ -23,9 +23,7 @@ import org.processmining.eigenvalue.data.EntropyResult;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.models.graphbased.directed.petrinet.Petrinet;
-import org.processmining.projectedrecallandprecision.helperclasses.AcceptingPetriNet2automaton;
-import org.processmining.projectedrecallandprecision.helperclasses.AutomatonFailedException;
-import org.processmining.projectedrecallandprecision.helperclasses.ProjectPetriNetOntoActivities;
+
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -82,7 +80,7 @@ public class TopologicalEntropyComputer {
         AcceptingPetriNet projectedNet = ProjectPetriNetOntoActivities.project(acceptingPetriNet, canceller, names);
         EntropyResult entM = null;
         try {
-            dk.brics.automaton2.Automaton a = AcceptingPetriNet2automaton.convert(projectedNet, Integer.MAX_VALUE, canceller);
+            dk.brics.automaton.Automaton a = AcceptingPetriNet2automaton.convert(projectedNet, Integer.MAX_VALUE, canceller);
             entM = getTopologicalEntropy(a, "M " + net.getLabel(), canceller);
 
         } catch (AutomatonFailedException e) {
