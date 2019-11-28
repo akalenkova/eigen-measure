@@ -83,6 +83,9 @@ public class MetricsCalculator {
 				int cnt = 1;
 				Automaton aTmp = new Automaton();
 				int chunk = numberOfTraces / 3;
+				if(chunk == 0) {
+					chunk = 1;
+				}
 //				int chunk = 100;
 				while (iterator.hasNext()) {
 					System.out.println("Trace number " + cnt);
