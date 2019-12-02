@@ -66,27 +66,27 @@ public class MetricsCalculator {
 				
 				// START CHUNKS APPROACH--------------------------------------------------------------------------
 					
-				Set<String> retrievedTraces = aL.getFiniteStrings();
-				if (retrievedTraces != null) {
+				Set<String> relevantTraces = aL.getFiniteStrings();
+				if (relevantTraces != null) {
 					
-				excludeSubstrings(retrievedTraces);
-				List<String> listOfReceivedtraces = new ArrayList<String>(retrievedTraces);
+				excludeSubstrings(relevantTraces);
+				List<String> listOfReleventTraces = new ArrayList<String>(relevantTraces);
 				
-				listOfReceivedtraces.sort(Comparator.comparing( String::toString));
+				listOfReleventTraces.sort(Comparator.comparing( String::toString));
 				
-				int numberOfTraces = listOfReceivedtraces.size();
+				int numberOfTraces = listOfReleventTraces.size();
 
 				System.out.println("Size " + numberOfTraces);
 				Automaton a = new Automaton();
-				Iterator<String> iterator = listOfReceivedtraces.iterator();
+				Iterator<String> iterator = listOfReleventTraces.iterator();
 				Automaton tmpCollection = new Automaton();
 				int cnt = 1;
 				Automaton aTmp = new Automaton();
-				int chunk = numberOfTraces / 3;
-				if(chunk == 0) {
-					chunk = 1;
-				}
-//				int chunk = 100;
+//				int chunk = numberOfTraces / 3;
+//				if(chunk == 0) {
+//					chunk = 1;
+//				}
+				int chunk = 100;
 				while (iterator.hasNext()) {
 					System.out.println("Trace number " + cnt);
 					long time = System.currentTimeMillis(); 
@@ -100,11 +100,11 @@ public class MetricsCalculator {
 					System.out.println("Size of tmp automaton " + aTmp.getNumberOfStates());
 
 					if(cnt % chunk == 0) { 
-						if (chunk > 10) {
-							chunk = chunk / 2 ;
-						} else {
-							chunk = 10;
-						}
+//						if (chunk > 10) {
+//							chunk = chunk / 2 ;
+//						} else {
+//							chunk = 10;
+//						}
 						System.gc();
 						tmpCollection.determinize();
 						tmpCollection.minimize();
@@ -146,10 +146,10 @@ public class MetricsCalculator {
 				System.out.println(String.format(
 						"Efficiently constructing deterministic minimal automaton for relevant traces with tau."));
 				start = System.currentTimeMillis();
-				Set<String> relevantTraces = aM.getFiniteStrings();
-				if (relevantTraces != null) {
+				Set<String> retrievedTraces = aM.getFiniteStrings();
+				if (retrievedTraces != null) {
 					Automaton a = new Automaton();
-					for (String trace : relevantTraces) {
+					for (String trace : retrievedTraces) {
 						Automaton aTmp = Automaton.makeString(trace);
 						Utils.addTau(aTmp);
 						aTmp.determinize();
