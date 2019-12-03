@@ -44,7 +44,7 @@ public class MetricsCalculator {
 	 * @param bEfficient flag indicating whether the values are to be computed efficiently
 	 * @return returns a pair (recall, precision)
 	 */
-	public static Pair<Double, Double> calculate(Automaton aM, String mName, Automaton aL, String lName, boolean bTau,
+	public static Pair<Double, Double> calculate(Automaton aL, String mName, Automaton aM, String lName, boolean bTau,
 			boolean bEfficient) {
 		boolean perfectReplay = false;
 		if(bTau) {	
@@ -61,7 +61,7 @@ public class MetricsCalculator {
 				
 				// ------------------Retrieved automaton--------------------------------
 				System.out.println(String.format(
-						"Efficiently constructing deterministic minimal automaton for retrieved traces with tau"));
+						"Efficiently constructing deterministic minimal automaton for relevant traces with tau"));
 				long start = System.currentTimeMillis();
 				
 				// START CHUNKS APPROACH--------------------------------------------------------------------------
@@ -132,19 +132,19 @@ public class MetricsCalculator {
 	
 					long time = System.currentTimeMillis() - start;
 					System.out.println(
-								String.format("Efficient construction of retrieved automaton with tau took  %s ms.", time));
+								String.format("Efficient construction of relevant automaton with tau took  %s ms.", time));
 					System.out.println(String.format("The number of states:                                        %s",
 								aL.getNumberOfStates()));
 					System.out.println(String.format("The number of transitions:                                   %s",
 								Utils.numberOfTransitions(aL)));
 				} else {
 					System.out.println(String.format(
-							"Retrived automaton accepts infinite number of traces. Efficient algorithm cannot be applied."));
+							"Relevant automaton accepts infinite number of traces. Efficient algorithm cannot be applied"));
 					infiniteL = true;
 				}
 				// ------------------Relevant automaton--------------------------------
 				System.out.println(String.format(
-						"Efficiently constructing deterministic minimal automaton for relevant traces with tau."));
+						"Efficiently constructing deterministic minimal automaton for retrieved traces with tau"));
 				start = System.currentTimeMillis();
 				Set<String> retrievedTraces = aM.getFiniteStrings();
 				if (retrievedTraces != null) {
@@ -161,14 +161,14 @@ public class MetricsCalculator {
 					aM = a.clone();
 					long time = System.currentTimeMillis() - start;
 					System.out.println(
-							String.format("Efficient construction of relevant automaton with tau took   %s ms.", time));
+							String.format("Efficient construction of retrieved automaton with tau took   %s ms.", time));
 					System.out.println(String.format("The number of states:                                        %s",
 							aM.getNumberOfStates()));
 					System.out.println(String.format("The number of transitions:                                   %s",
 							Utils.numberOfTransitions(aM)));
 				} else {
 					System.out.println(String.format(
-							"Relevant automaton accepts infinite number of traces. Efficient algorithm cannot be applied."));
+							"Retrieved automaton accepts infinite number of traces. Efficient algorithm cannot be applied."));
 					infiniteM = true;
 				}
 				
@@ -177,34 +177,34 @@ public class MetricsCalculator {
 			if (!bEfficient || infiniteL) {
 				
 				// ------------------Adding tau to retrieved automaton-------------------
-				System.out.println("Starting preliminary minimization of retrieved automaton with tau");
+				System.out.println("Starting preliminary minimization of relevant automaton with tau");
 				long start = System.currentTimeMillis();
 				aL.minimize();
 				long time = System.currentTimeMillis() - start;
 				System.out.println(
-						String.format("The retrieved automaton with tau is minimized in             %s ms.", time));
+						String.format("The relevant automaton with tau is minimized in             %s ms.", time));
 				System.out.println(String.format("The number of states:                                        %s", aL.getNumberOfStates()));
 				System.out.println(String.format("The number of transitions:                                   %s", Utils.numberOfTransitions(aL)));
 				
 				Utils.addTau(aL);
 				
 				// Determinization of automaton
-				System.out.println("Starting determinization of retrieved automaton with tau");
+				System.out.println("Starting determinization of relevant automaton with tau");
 				start = System.currentTimeMillis();
 				aL.determinize();
 				time = System.currentTimeMillis() - start;
 				System.out.println(
-						String.format("The retrieved automaton with tau is determinized in          %s ms.", time));
+						String.format("The relevant automaton with tau is determinized in          %s ms.", time));
 				System.out.println(String.format("The number of states:                                        %s", aL.getNumberOfStates()));
 				System.out.println(String.format("The number of transitions:                                   %s", Utils.numberOfTransitions(aL)));
 
 				// Minimization of automaton
-				System.out.println("Starting minimization of retrieved automaton with tau");
+				System.out.println("Starting minimization of relevant automaton with tau");
 				start = System.currentTimeMillis();
 				aL.minimize();
 				time = System.currentTimeMillis() - start;
 				System.out.println(
-						String.format("The retrieved automaton with tau is minimized in             %s ms.", time));
+						String.format("The relevant automaton with tau is minimized in             %s ms.", time));
 				System.out.println(String.format("The number of states:                                        %s", aL.getNumberOfStates()));
 				System.out.println(String.format("The number of transitions:                                   %s", Utils.numberOfTransitions(aL)));
 			}
@@ -212,34 +212,34 @@ public class MetricsCalculator {
 			if (!bEfficient || infiniteM) {
 				// ------------------Adding tau to relevant automaton-------------------
 				// Minimization of automaton
-				System.out.println("Starting preliminary minimization of relevant automaton with tau");
+				System.out.println("Starting preliminary minimization of retrieved automaton with tau");
 				long start = System.currentTimeMillis();
 				aM.minimize();
 				long time = System.currentTimeMillis() - start;
 				System.out.println(
-						String.format("The relevant automaton with tau is minimized in              %s ms.", time));
+						String.format("The retrieved automaton with tau is minimized in              %s ms.", time));
 				System.out.println(String.format("The number of states:                                        %s", aM.getNumberOfStates()));
 				System.out.println(String.format("The number of transitions:                                   %s", Utils.numberOfTransitions(aM)));
 
 				Utils.addTau(aM);
 				
 				// Determinization of automaton
-				System.out.println("Starting determinization of relevant automaton with tau");
+				System.out.println("Starting determinization of retrieved automaton with tau");
 				start = System.currentTimeMillis();
 				aM.determinize();
 				time = System.currentTimeMillis() - start;
 				System.out.println(
-						String.format("The relevant automaton with tau is determinized in           %s ms.", time));
+						String.format("The retrieved automaton with tau is determinized in           %s ms.", time));
 				System.out.println(String.format("The number of states:                                        %s", aM.getNumberOfStates()));
 				System.out.println(String.format("The number of transitions:                                   %s", Utils.numberOfTransitions(aM)));
 				
 				// Minimization of automaton
-				System.out.println("Starting minimization of relevant automaton with tau");
+				System.out.println("Starting minimization of retrieved automaton with tau");
 				start = System.currentTimeMillis();
 				aM.minimize();
 				time = System.currentTimeMillis() - start;
 				System.out.println(
-						String.format("The relevant automaton with tau is minimized in              %s ms.", time));
+						String.format("The retrieved automaton with tau is minimized in              %s ms.", time));
 				System.out.println(String.format("The number of states:                                        %s", aM.getNumberOfStates()));
 				System.out.println(String.format("The number of transitions:                                   %s", Utils.numberOfTransitions(aM)));
 			}
