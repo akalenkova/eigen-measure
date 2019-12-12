@@ -280,4 +280,9 @@ public class Utils {
 		
 		return result;
 	}
+	
+	public static String singlePlural(int count, String singular, String plural)
+	{
+	  return count==1 ? singular : plural;
+	}
 }

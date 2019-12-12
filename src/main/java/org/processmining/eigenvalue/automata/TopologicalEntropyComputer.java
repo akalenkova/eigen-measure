@@ -149,8 +149,8 @@ public class TopologicalEntropyComputer {
             }
         }
         long time = System.currentTimeMillis() - timeNow;
-        System.out.println(String.format("A largest eigenvalue of the adjacency matrix of %s is %s", name, largestEigenvalue));
-        System.out.println(String.format("A largest eigenvalue of the adjacency matrix of %s was computed in %s ms", name,  time));
+        System.out.println(String.format("A largest eigenvalue of the adjacency matrix of %s is %s.", name, largestEigenvalue));
+        System.out.println(String.format("A largest eigenvalue of the adjacency matrix of %s computed in     %s ms.", name,  time));
         System.out.println();
 
         return new EntropyResult("",0,time,a.getStates().size(), a.getStates().size(), a.getStates().size(),
