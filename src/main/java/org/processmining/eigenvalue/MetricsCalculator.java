@@ -44,7 +44,7 @@ public class MetricsCalculator {
 	 * @param bEfficient flag indicating whether the values are to be computed efficiently
 	 * @return returns a pair (recall, precision)
 	 */
-	public static Pair<Double, Double> calculate(Automaton aL, String mName, Automaton aM, String lName, boolean bTau,
+	public static Pair<Double, Double> calculate(Automaton aL, String lName, Automaton aM, String mName, boolean bTau,
 			boolean bEfficient) {
 		boolean perfectReplay = false;
 		if(bTau) {	
@@ -261,11 +261,11 @@ public class MetricsCalculator {
 		long start = System.currentTimeMillis();
 		Automaton aLM;
 		if(perfectReplay) {
-			//System.out.println("Perfect replay optimization");
+			System.out.println("Perfect replay optimization");
 			aLM = aL;
 		} else {
 			if(aL.subsetOf(aM)) {
-				//System.out.println("Perfect replay optimization");
+				System.out.println("Perfect replay optimization");
 				aLM = aL;
 			} else {
 				aLM = aM.intersection(aL);
