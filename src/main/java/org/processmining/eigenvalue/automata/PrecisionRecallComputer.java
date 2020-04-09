@@ -27,8 +27,6 @@ import org.processmining.framework.packages.impl.CancelledException;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.plugins.InductiveMiner.Pair;
-import org.processmining.projectedrecallandprecision.helperclasses.EfficientLog;
-import org.processmining.projectedrecallandprecision.helperclasses.ProjectPetriNetOntoActivities;
 
 import java.util.Arrays;
 import java.util.HashSet;
