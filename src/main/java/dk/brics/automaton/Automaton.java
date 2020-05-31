@@ -582,7 +582,7 @@ public class Automaton implements Serializable, Cloneable {
 			b.append("\n");
 		} else {
 			Set<State> states = getStates();
-			setStateNumbers(states);
+			//setStateNumbers(states);
 			b.append("initial state: ").append(initial.number).append("\n");
 			for (State s : states)
 				b.append(s.toString());
@@ -647,8 +647,11 @@ public class Automaton implements Serializable, Cloneable {
 			if (!isSingleton()) {
 				HashMap<State, State> m = new HashMap<State, State>();
 				Set<State> states = getStates();
-				for (State s : states)
-					m.put(s, new State());
+				for (State s : states) {
+					State newState = new State(); 
+					newState.setNumber(s.getNumber());
+					m.put(s, newState);
+				}
 				for (State s : states) {
 					State p = m.get(s);
 					p.accept = s.accept;

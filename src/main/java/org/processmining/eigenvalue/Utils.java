@@ -35,8 +35,11 @@ import dk.brics.automaton.Transition;
 
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,6 +47,7 @@ public class Utils {
 	
 	public static final String PRECISION_MEASURE = "Precision";
 	public static final String GENERALIZATION_MEASURE = "Generalization";
+	public static final char START = '@';
 
 
 	public static final String TEST_FOLDER = "test/testfiles/";
@@ -228,6 +232,44 @@ public class Utils {
 		return shortArray;
 	}
 	
+	public static Automaton unionWithStart (Automaton a1, Automaton a2) {
+		
+		
+		State initState1 = a1.getInitialState();
+		State initState2 = a2.getInitialState();
+		
+		Transition t1 = new Transition(START, initState1);
+		if (initState2 == null) {
+			State s = new State();
+			s.addTransition(t1);
+			a2.setInitialState(s);
+			
+		} else {
+			initState2.addTransition(t1);
+
+		}
+		return a2;
+	}
+	
+	public static Automaton removeStart(Automaton a) {
+		
+		Collection<StatePair> newEpsilons = new HashSet<StatePair>();
+		State newStart = new State();
+		
+		for (State s : a.getStates()) {
+			for (Transition t : s.getTransitions()) {
+				if ((t.getMin() == START) && (t.getMax() == START)) {
+					newEpsilons.add(new StatePair(newStart, t.getDest()));
+				}
+			}
+		}
+		
+		a.setInitialState(newStart);
+		a.addEpsilons(newEpsilons);
+		return a;
+	}
+	
+
 	public static Automaton union (Automaton a1, Automaton a2) {
 		
 		State initState1 = a1.getInitialState();
@@ -246,6 +288,88 @@ public class Utils {
 		a2.addEpsilons(setEpsilons);
 		
 		return a2;
+	}
+	
+	
+	
+	public static Automaton skipKSteps(Automaton a, int k) {
+		
+		Collection<StatePair> newEpsilons = new HashSet<StatePair>();
+		
+		Automaton[] allAutomata = new Automaton[k+1];
+		
+		for(int i=0; i<=k; i++) {
+			allAutomata[i] = a.clone();
+			if (k-i > 0) {
+				addAcceptingStates(allAutomata[i], allAutomata[i].getAcceptStates(), k-i);
+			}
+			
+			//System.out.println("Automata: [" + i + "] " + allAutomata[i]);
+			
+			
+			if(i > 0) {
+				for (State s : allAutomata[i-1].getStates()) {
+					for (Transition outTransition : s.getTransitions()) {
+						State outState = outTransition.getDest();
+						State nextState = findStateWithNumber(allAutomata[i], outState.getNumber());
+						newEpsilons.add(new StatePair(s, nextState));
+						//System.out.println("Adding new pair: " + s + " and " + nextState);
+					}
+				}
+			}
+		}
+		
+		Automaton resultAutomaton = new Automaton();
+		for(int i=0; i<=k; i++) {
+			Utils.unionWithStart(allAutomata[i], resultAutomaton);
+		}
+		
+		//System.out.println("Result automaton before epsilons " + resultAutomaton);
+		resultAutomaton.addEpsilons(newEpsilons);
+		//System.out.println("Result automaton after epsilons " + resultAutomaton);
+			
+		
+		
+		resultAutomaton.determinize();
+		resultAutomaton.minimize();
+		removeStart(resultAutomaton);
+		
+		//System.out.println("Result automaton " + resultAutomaton);
+		return resultAutomaton;
+	}
+	
+	
+	private static void addAcceptingStates (Automaton a, Set<State> startStates, int numberOfSkips) {
+		
+		Set<State> nextAcceptingStates = new HashSet<State>();
+		
+		for(State s: a.getStates()) {
+			for (Transition outTransition : s.getTransitions()) {
+				State outState = outTransition.getDest();
+				if(startStates.contains(outState)) {
+					nextAcceptingStates.add(s);
+				}
+			}
+		}
+		
+		for(State s: nextAcceptingStates) {
+			s.setAccept(true);
+		}
+		
+		if(numberOfSkips > 1) {
+			addAcceptingStates(a, nextAcceptingStates, numberOfSkips - 1);
+		}
+	}
+	
+	private static State findStateWithNumber(Automaton a, int number) {
+		
+		for(State s : a.getStates()) {
+			if(s.getNumber() == number) {
+				return s;
+			}
+		}
+		
+		return null;
 	}
 	
 //	public static Automaton expandTree(Automaton a) {

@@ -42,15 +42,39 @@ public class MetricsCalculator {
 	 * @param aL log
 	 * @param bTau flag indicating whether tau steps are to be added
 	 * @param bEfficient flag indicating whether the values are to be computed efficiently
+	 * @param numberOfSkipsL allowed number of skips in aL 
+	 * @param numberOfSkipsM allowed number of skips in aM
 	 * @return returns a pair (recall, precision)
 	 */
 	public static Pair<Double, Double> calculate(Automaton aL, String lName, Automaton aM, String mName, boolean bTau,
-			boolean bEfficient) {
+			boolean bEfficient, int numberOfSkipsL, int numberOfSkipsM) {
+		
+		if ((numberOfSkipsL > 0) && (bTau == false)) {
+			long startTime = System.currentTimeMillis();
+			
+			aL = Utils.skipKSteps(aL, numberOfSkipsL);
+			
+			long calculationTime = System.currentTimeMillis() - startTime;
+			System.out.println("Number of states in : " + lName + " is " +  aL.getNumberOfStates());
+			System.out.println("Construction time of : " + lName + " is " +  calculationTime + " ms.");
+		}
+		if ((numberOfSkipsM > 0) && (bTau == false)) {
+			long startTime = System.currentTimeMillis();
+			
+			aM = Utils.skipKSteps(aM, numberOfSkipsM);
+			
+			long calculationTime = System.currentTimeMillis() - startTime;
+			System.out.println("Number of states in : " + mName + " is " +  aM.getNumberOfStates());
+			System.out.println("Construction time of : " + mName + " is " +  calculationTime + " ms.");
+		}
+		
+		
+		
 		boolean perfectReplay = false;
 		if(bTau) {	
 			
 			if(aL.subsetOf(aM)) {
-				perfectReplay = true;
+				//perfectReplay = true;
 				//System.out.println("Perfect replay optimization");
 			}
 			boolean infiniteM = false; // the relevant behavior contains infinite number of traces
@@ -174,7 +198,7 @@ public class MetricsCalculator {
 			
 			if (!bEfficient || infiniteL) {
 				
-				// ------------------Adding tau to retrieved automaton-------------------
+				// ------------------Adding tau to relevant automaton-------------------
 				//System.out.println("Starting preliminary minimization of relevant automaton with tau");
 				System.out.println("Minimizing automaton REL.");
 				long start = System.currentTimeMillis();
@@ -215,7 +239,7 @@ public class MetricsCalculator {
 			}
 			
 			if (!bEfficient || infiniteM) {
-				// ------------------Adding tau to relevant automaton-------------------
+				// ------------------Adding tau to retrieved automaton-------------------
 				// Minimization of automaton
 				//System.out.println("Starting preliminary minimization of retrieved automaton with tau");
 				System.out.println("Minimizing automaton RET.");
@@ -370,15 +394,20 @@ public class MetricsCalculator {
 	/**
 	 * Calculates entropy of the given automaton
 	 * 
-	 * @param model      automaton
-	 * @param name       name of the automaton
-	 * @param bTau       flag indicating whether tau steps are to be added
-	 * @param bEfficient flag indicating whether the values are to be computed
-	 *                   efficiently
+	 * @param model         automaton
+	 * @param name          name of the automaton
+	 * @param bTau          flag indicating whether tau steps are to be added
+	 * @param bEfficient    flag indicating whether the values are to be computed efficiently
+	 * @param numberOfSkips max allowed number of skips
+	 * 
 	 * @return returns entropy (double)
 	 */
-	public static double calculateEntropy(Automaton model, String name, boolean bTau, boolean bEfficient) {
-
+	public static double calculateEntropy(Automaton model, String name, boolean bTau, boolean bEfficient, int numberOfSkips) {
+		
+		if ((numberOfSkips > 0) && (bTau == false)) {
+			model = Utils.skipKSteps(model, numberOfSkips);
+		}
+		
 		if (bTau) {
 			boolean infinite = false; // the behavior contains infinite number of traces
 			// ------------------Efficient computation-------------------

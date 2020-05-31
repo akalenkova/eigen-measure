@@ -60,6 +60,16 @@ public class State implements Serializable, Comparable<State> {
 		id = next_id++;
 	}
 	
+	public void setNumber(int number) {
+		
+		this.number = number;
+	}
+	
+	public int getNumber() {
+		
+		return number;
+	}
+	
 	/** 
 	 * Resets transition set. 
 	 */
