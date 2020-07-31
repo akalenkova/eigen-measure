@@ -11,12 +11,16 @@
 package org.processmining.eigenvalue;
 
 
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 
 import org.apache.commons.math3.util.Pair;
 import org.processmining.eigenvalue.automata.TopologicalEntropyComputer;
@@ -32,7 +36,6 @@ public class MetricsCalculator {
 	
 	final static int INITIAL_NUMBER_OF_TRACES = 100;
 	public static void main(String[] args) {
-		
 	}
 	
 	/**
@@ -125,14 +128,14 @@ public class MetricsCalculator {
 
 					if(cnt % chunk == 0) { 
 //						if (chunk > 10) {
-//							chunk = chunk / 2 ;
+//							chunk = chunk / 3 ;
 //						} else {
 //							chunk = 10;
 //						}
 						System.gc();
 						tmpCollection.determinize();
 						tmpCollection.minimize();
-						a = Utils.union(a, aTmp);
+						a = Utils.union(a, tmpCollection);
 						tmpCollection = new Automaton();
 						a.determinize();
 						a.minimize();
@@ -144,7 +147,7 @@ public class MetricsCalculator {
 					cnt++;
 				}
 				System.gc();
-				a = Utils.union(a, aTmp);
+				a = Utils.union(a, tmpCollection);
 				a.determinize();
 				a.minimize();
 				aL = a;
@@ -312,14 +315,17 @@ public class MetricsCalculator {
 		
 		double recall = resultLM.largestEigenvalue / resultL.largestEigenvalue;
 		double precision = resultLM.largestEigenvalue / resultM.largestEigenvalue;
-		
-    	System.out.println(String.format("Precision: %s.", precision));
-		System.out.println(String.format("Recall: %s.", recall));
-		
+        
 		System.out.println(String.format("Precision computed in                                               %s ms.", resultM.computationMillis + resultLM.computationMillis));
 		System.out.println(String.format("Recall computed in                                                  %s ms.", resultL.computationMillis + resultLM.computationMillis));
 		System.out.println(String.format("Both values of precision and recall computed in                     %s ms.", resultM.computationMillis +resultL.computationMillis + resultLM.computationMillis));
 		
+		// redirecting standard output back
+        System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+        
+    	System.out.println(String.format("Precision: %s.", precision));
+		System.out.println(String.format("Recall: %s.", recall));
+        
 		return new Pair<Double, Double>(recall, precision);
 	}
 	
@@ -511,7 +517,6 @@ public class MetricsCalculator {
 			 }
 		 }
 		 for(Byte b : alphabet) {
-			 System.out.println(b);
 			 dk.brics.automaton.Transition t = new dk.brics.automaton.Transition((char)b.byteValue(), initialState);
 			 initialState.addTransition(t);
 		 }
