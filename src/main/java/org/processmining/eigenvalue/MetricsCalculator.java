@@ -11,6 +11,7 @@
 package org.processmining.eigenvalue;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -50,7 +51,12 @@ public class MetricsCalculator {
 	 * @return returns a pair (recall, precision)
 	 */
 	public static Pair<Double, Double> calculate(Automaton aL, String lName, Automaton aM, String mName, boolean bTau,
-			boolean bEfficient, int numberOfSkipsL, int numberOfSkipsM) {
+			boolean bEfficient, int numberOfSkipsL, int numberOfSkipsM, boolean bPrecision, boolean bRecall, boolean bSilent) {
+		
+		if(bSilent) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        	System.setOut(new PrintStream(baos));
+		}
 		
 		if ((numberOfSkipsL > 0) && (bTau == false)) {
 			long startTime = System.currentTimeMillis();
@@ -309,22 +315,43 @@ public class MetricsCalculator {
 
 		
 		System.gc();
-		EntropyResult resultL = TopologicalEntropyComputer.getTopologicalEntropy(aL, lName);
-		EntropyResult resultM = TopologicalEntropyComputer.getTopologicalEntropy(aM, mName);		
+		EntropyResult resultM = null, resultL = null;
+		double precision = 0.0, recall = 0.0;
+		
+		if (bRecall) {
+			resultL = TopologicalEntropyComputer.getTopologicalEntropy(aL, lName);
+		}
+		if (bPrecision) {
+			resultM = TopologicalEntropyComputer.getTopologicalEntropy(aM, mName);	
+		}
 		EntropyResult resultLM = TopologicalEntropyComputer.getTopologicalEntropy(aLM, "INT");
 		
-		double recall = resultLM.largestEigenvalue / resultL.largestEigenvalue;
-		double precision = resultLM.largestEigenvalue / resultM.largestEigenvalue;
+		if (bRecall) {
+			recall = resultLM.largestEigenvalue / resultL.largestEigenvalue;
+		}
+		
+		if (bPrecision) {
+			precision = resultLM.largestEigenvalue / resultM.largestEigenvalue;
+		}
         
-		System.out.println(String.format("Precision computed in                                               %s ms.", resultM.computationMillis + resultLM.computationMillis));
-		System.out.println(String.format("Recall computed in                                                  %s ms.", resultL.computationMillis + resultLM.computationMillis));
-		System.out.println(String.format("Both values of precision and recall computed in                     %s ms.", resultM.computationMillis +resultL.computationMillis + resultLM.computationMillis));
+		if (bPrecision) {
+			System.out.println(String.format("Precision computed in                                               %s ms.", resultM.computationMillis + resultLM.computationMillis));
+		}
+		if (bRecall) {
+			System.out.println(String.format("Recall computed in                                                  %s ms.", resultL.computationMillis + resultLM.computationMillis));
+		}
+		if (bPrecision && bRecall) {
+			System.out.println(String.format("Both values of precision and recall computed in                     %s ms.", resultM.computationMillis +resultL.computationMillis + resultLM.computationMillis));
+		}
 		
 		// redirecting standard output back
         System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
-        
-    	System.out.println(String.format("Precision: %s.", precision));
-		System.out.println(String.format("Recall: %s.", recall));
+        if (bPrecision) {
+        	System.out.print(String.format(bSilent ? "%s": "Precision: %s.", precision));
+        }
+        if (bRecall) {
+        	System.out.print(String.format(bSilent ?(bPrecision ? ", %s":"%s"):(bPrecision ? "\nRecall: %s." : "Recall: %s."), recall));
+        }
         
 		return new Pair<Double, Double>(recall, precision);
 	}
